@@ -1,0 +1,378 @@
+<chapter xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0" xml:lang="hu">
+    <info>
+        <title>Helló, Caesar!</title>
+        <keywordset>
+            <keyword/>
+        </keywordset>
+    </info>
+    <section>
+        <title><type>Double **</type> háromszögmátrix</title>
+        <para>
+            Ebben a feladatban háromszögmátrixokkal fogunk foglalkozni ezért fontos letisztázni, hogy mi is az a mátrix és mikor beszélünk háromszögmátrixról.A mátrixok m darab sorral és n darab oszloppal rendelkező táblázatok.Ha egy mátrix négyzetes, azaz a sorok és oszlopok száma megegyezik és  főátlója alatt vagy felett csupa 0 elem található, akkor alsó vagy felső háromszög mátrixról beszélünk.
+            Az alsó háromszögmátrix elemeit sorfolytonosan bejárva el tudjuk helyezni egy tömbben vagy vektorban.
+            A <function>malloc</function> függvénnyel képesek vagunk lefoglalni a dinamikus területen egy, addot méretű területet,amit paraméterként kapunk meg.Végül a lefoglalt területet a <function>free</function> függvény felszabadítjuk.
+        </para>
+        <programlisting language="c"><![CDATA[
+#include <stdio.h>
+#include <stdlib.h>
+
+int
+main ()
+{
+    int nr = 5;
+    double **tm;
+    
+    printf("%p\n", &tm);
+    
+    if ((tm = (double **) malloc (nr * sizeof (double *))) == NULL)
+    {
+        return -1;
+    }
+
+    printf("%p\n", tm);
+    
+    for (int i = 0; i < nr; ++i)
+    {
+        if ((tm[i] = (double *) malloc ((i + 1) * sizeof (double))) == NULL)
+        {
+            return -1;
+        }
+
+    }
+
+    printf("%p\n", tm[0]);    
+    
+    for (int i = 0; i < nr; ++i)
+        for (int j = 0; j < i + 1; ++j)
+            tm[i][j] = i * (i + 1) / 2 + j;
+
+    for (int i = 0; i < nr; ++i)
+    {
+        for (int j = 0; j < i + 1; ++j)
+            printf ("%f, ", tm[i][j]);
+        printf ("\n");
+    }
+
+    for (int i = 0; i < nr; ++i)
+    {
+        for (int j = 0; j < i + 1; ++j)
+            printf ("%f, ", tm[i][j]);
+        printf ("\n");
+    }
+
+    for (int i = 0; i < nr; ++i)
+        free (tm[i]);
+
+    free (tm);
+
+    return 0;
+}
+]]></programlisting>   
+<mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/doublecscs.png" scale="50" />
+                </imageobject>
+        </mediaobject>         
+    </section>        
+    <section>
+        <title>C EXOR titkosító</title>
+        <para>
+    		A feladatunk az volt, hogy készitsönk egy EXOR-os titkositót C-ben.A program maga egy fáljból kapott szöveget fog titkositani amit aztán kiír egy cél fáljba.A kódot forditás után(gcc titkosito.c -o titkosito) úgy lehet futatni Linux terminálban, hogy a következő sort begépeljük: 
+    		<programlisting language="tex"><![CDATA[
+./titkosito kód < titkositandó.szöveg > titkositot.szöveg
+    		]]></programlisting>
+    		A futtáshoz szükséges parancssorban észrevehetjük, hogy szükségünk lesz egy bemeneti fájlra ami tartalmaza a titkositani kívánt szöveget, egy kimeneti fájlra ahova majd a titkositot szöveg fog kerülni illetve egy kódra ami alapján titkosítani fogunk.Az általunk megadott kóddal úgy fog titkosjtani, hogy a kód bitjeit kizáró vaggyal (EXOR-al) összeküti.
+    		Az így létrejőt szöveget pedig kiírja a megadott output fájlunkba.
+        </para>
+        <para>
+        A kódban láthatjuk, hogy a szokásos includeok után láthatunk két definet az egyik a maximális kulcsméretett a másik a buffer méretét rogzíti.A main függvényben láthatunk pár változó deklarálást illetve egy while ciklust. Utóbbinak a feladata, hogy a kapott szöveg bájtjait a kulcsal elshiftelje.Az így kapott szöveget végül kiírjuk egy fájlba.
+        </para>
+        <programlisting language="c"><![CDATA[
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+
+#define MAX_KULCS 100
+#define BUFFER_MERET 256
+
+
+int
+main (int argc, char **argv)
+{
+
+  char kulcs[MAX_KULCS];
+  char buffer[BUFFER_MERET];
+
+  int kulcs_index = 0;
+  int olvasott_bajtok = 0;
+
+  int kulcs_meret = strlen (argv[1]);
+  strncpy (kulcs, argv[1], MAX_KULCS);
+
+  while ((olvasott_bajtok = read (0, (void *) buffer, BUFFER_MERET)))
+    {
+
+      for (int i = 0; i < olvasott_bajtok; ++i)
+	{
+
+	  buffer[i] = buffer[i] ^ kulcs[kulcs_index];
+	  kulcs_index = (kulcs_index + 1) % kulcs_meret;
+
+	}
+
+      write (1, buffer, olvasott_bajtok);
+
+    }
+}
+]]></programlisting>
+        
+    </section>        
+    <section>
+        <title>Java EXOR titkosító</title>
+        <para>
+            Az elöző feladatban megírt C kizáro vagyos titkositonkat át fogjuk írni java-ba.A program működési elve úgyan az, azt leszámítva, hogy itt a bemeneti fájl helyett a standard inputon keresztül visszük be a titkositandó szöveget. 
+        </para>
+        <para>
+        A kód attekintése után láthatjuk, hogy  itt is egy kulccsal fogjuk bájtonként elshiftelni a szöveget és így fog létrejönni a titkosítot szövegünk. Ez ugy fogjuk megtenni, hogy inditunk egy while ciklust ami adig fog tartani amedig az éppen bejövő szövegen végig nem ment bájtonként.   
+    </para>
+        <programlisting language="java"><![CDATA[
+public class ExorTitkosító {
+    
+    public ExorTitkosító(String kulcsSzöveg,
+            java.io.InputStream bejövőCsatorna,
+            java.io.OutputStream kimenőCsatorna)
+            throws java.io.IOException {
+        
+        byte [] kulcs = kulcsSzöveg.getBytes();
+        byte [] buffer = new byte[256];
+        int kulcsIndex = 0;
+        int olvasottBájtok = 0;
+
+        while((olvasottBájtok =
+                bejövőCsatorna.read(buffer)) != -1) {
+            
+            for(int i=0; i<olvasottBájtok; ++i) {
+                
+                buffer[i] = (byte)(buffer[i] ^ kulcs[kulcsIndex]);
+                kulcsIndex = (kulcsIndex+1) % kulcs.length;
+                
+            }
+            
+            kimenőCsatorna.write(buffer, 0, olvasottBájtok);
+            
+        }
+        
+    }
+    
+    public static void main(String[] args) {
+        
+        try {
+            
+            new ExorTitkosító(args[0], System.in, System.out);
+            
+        } catch(java.io.IOException e) {
+            
+            e.printStackTrace();
+            
+        }
+        
+    }
+    
+}
+]]></programlisting> 
+            
+    </section>        
+    <section>
+        <title>C EXOR törő</title>
+        <para>
+            Az elöző két feladatban titkosítotunk és most a titkositot fájlunkat fogjuk feltörni.A mi EXOR törőnk egy öt, az angol ábc betüiből álló kódot fogja feltőrni illetve dekodolja a szöveget. A program végigmegy a kódolt szövegen és egymásba ágyazot ciklusokkal legyártja az összes lehetséges kulcsot és megprobálja dekódolni a szöveget.A tiszta lehet függvény magyar nyelvben gyakran előforduló szavakat megkeresi és azok alapján próbálja megtippelni, hogy a szöveg tiszta-e.A program működésének részetesebb elemzése a kódban kommentek formájában található meg.
+        </para>
+        <programlisting language="c"><![CDATA[
+#define MAX_TITKOS 4096
+#define OLVASAS_BUFFER 256
+#define KULCS_MERET 5
+#define _GNU_SOURCE
+
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+
+double
+atlagos_szohossz (const char *titkos, int titkos_meret)
+{
+  int sz = 0;
+  for (int i = 0; i < titkos_meret; ++i)
+    if (titkos[i] == ' ')
+      ++sz;
+
+  return (double) titkos_meret / sz;
+}
+
+int
+tiszta_lehet (const char *titkos, int titkos_meret)
+{
+  // a tiszta szoveg valszeg tartalmazza a gyakori magyar szavakat
+  // illetve az átlagos szóhossz vizsgálatával csökkentjük a
+  // potenciális töréseket
+
+  double szohossz = atlagos_szohossz (titkos, titkos_meret);
+
+  return szohossz > 6.0 && szohossz < 9.0
+    && strcasestr (titkos, "hogy") && strcasestr (titkos, "nem")
+    && strcasestr (titkos, "az") && strcasestr (titkos, "ha");
+
+}
+
+void
+exor (const char kulcs[], int kulcs_meret, char titkos[], int titkos_meret)
+{
+
+  int kulcs_index = 0;
+
+  for (int i = 0; i < titkos_meret; ++i)
+    {
+
+      titkos[i] = titkos[i] ^ kulcs[kulcs_index];
+      kulcs_index = (kulcs_index + 1) % kulcs_meret;
+
+    }
+
+}
+
+int
+exor_tores (const char kulcs[], int kulcs_meret, char titkos[],
+	    int titkos_meret)
+{
+
+  exor (kulcs, kulcs_meret, titkos, titkos_meret);
+
+  return tiszta_lehet (titkos, titkos_meret);
+
+}
+
+int
+main (void)
+{
+
+  char kulcs[KULCS_MERET];
+  char titkos[MAX_TITKOS];
+  char *p = titkos;
+  int olvasott_bajtok;
+  char kod[28]= {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
+
+  // titkos fajt berantasa
+  while ((olvasott_bajtok =
+	  read (0, (void *) p,
+		(p - titkos + OLVASAS_BUFFER <
+		 MAX_TITKOS) ? OLVASAS_BUFFER : titkos + MAX_TITKOS - p)))
+    p += olvasott_bajtok;
+
+  // maradek hely nullazasa a titkos bufferben  
+  for (int i = 0; i < MAX_TITKOS - (p - titkos); ++i)
+    titkos[p - titkos + i] = '\0';
+
+  // osszes kulcs eloallitasa
+	for (int ii = 0; ii <= 28; ++ii)
+		for (int ji = 0; ji <= 28; ++ji)
+			for (int ki = 0; ki <= 28; ++ki)
+				for (int li = 0; li <= 28; ++li)
+					for (int mi = 0; mi <= 28; ++mi)
+		  {
+		    kulcs[0] = kod[ii];
+		    kulcs[1] = kod[ji];
+		    kulcs[2] = kod[ki];
+		    kulcs[3] = kod[li];
+		    kulcs[4] = kod[mi];
+
+		    if (exor_tores (kulcs, KULCS_MERET, titkos, p - titkos))
+			{
+		      printf
+			("Kulcs: [%c%c%c%c%c]\nTiszta szoveg: [%s]\n",
+			 kod[ii], kod[ji], kod[ki], kod[li], kod[mi], titkos);
+				return 0;
+			}
+
+		    // ujra EXOR-ozunk, igy nem kell egy masodik buffer  
+		    exor (kulcs, KULCS_MERET, titkos, p - titkos);
+		  }
+
+  return 0;
+}
+]]></programlisting>            
+    </section>        
+    <section>
+        <title>Neurális OR, AND és EXOR kapu</title>
+        <para>
+            Az emberi agyban található neuronok hálozata felel az információk feldolgozásáért.A neuron felelős az elektromos jelek fogadásáért, feldolgozásáért és továbbadásáért.Neurális hálonak nevezzük azt az információfeldolgoző eszközt, amely nagyszámú, hasonló típussal rendelkező adat feldolgozására képes.Illetve tanulási algoritmussal is rendelkezik így képes előhívni a korábban megtanult információkat.Ezt fogjuk tapasztalni a lentebb található R kódban is.A program azt fogja csinálni, hogy az általunk megadot szabályok alapján elkezdi megtanulni az alap logikai műveleteket.
+        </para>
+        <programlisting language="R"><![CDATA[
+library(neuralnet)
+
+a1    <- c(0,1,0,1)
+a2    <- c(0,0,1,1)
+OR    <- c(0,1,1,1)
+
+or.data <- data.frame(a1, a2, OR)
+
+nn.or <- neuralnet(OR~a1+a2, or.data, hidden=0, linear.output=FALSE, stepmax = 1e+07, threshold = 0.000001)
+
+plot(nn.or)
+
+compute(nn.or, or.data[,1:2])
+
+
+a1    <- c(0,1,0,1)
+a2    <- c(0,0,1,1)
+OR    <- c(0,1,1,1)
+AND   <- c(0,0,0,1)
+
+orand.data <- data.frame(a1, a2, OR, AND)
+
+nn.orand <- neuralnet(OR+AND~a1+a2, orand.data, hidden=0, linear.output=FALSE, stepmax = 1e+07, threshold = 0.000001)
+
+plot(nn.orand)
+
+compute(nn.orand, orand.data[,1:2])
+
+
+
+a1      <- c(0,1,0,1)
+a2      <- c(0,0,1,1)
+EXOR    <- c(0,1,1,0)
+
+exor.data <- data.frame(a1, a2, EXOR)
+
+nn.exor <- neuralnet(EXOR~a1+a2, exor.data, hidden=0, linear.output=FALSE, stepmax = 1e+07, threshold = 0.000001)
+
+plot(nn.exor)
+
+compute(nn.exor, exor.data[,1:2])
+
+
+
+a1      <- c(0,1,0,1)
+a2      <- c(0,0,1,1)
+EXOR    <- c(0,1,1,0)
+
+exor.data <- data.frame(a1, a2, EXOR)
+
+nn.exor <- neuralnet(EXOR~a1+a2, exor.data, hidden=c(6, 4, 6), linear.output=FALSE, stepmax = 1e+07, threshold = 0.000001)
+
+plot(nn.exor)
+
+compute(nn.exor, exor.data[,1:2])
+]]></programlisting>          
+    </section>        
+    <section>
+        <title>Hiba-visszaterjesztéses perceptron</title>
+        <para>
+            Ebben a feladatban továbbrai is a neurális hálokkal, pontosaban a percetronokkal fogunk foglalkozni.Ez az algoritmus a számítógépnek megtanitja a binári osztályzást.
+            A bináris osztályzást legegyszerübben úgy érthetjük meg ha elképzelünk egy vonalat ami fölött fehér, alatta pedig fekete pontok vannak.Ha perceptronnak megadok egy fehéret és egy feketét onnantól kezdve el fogja tudni dönteni,hogy az adottpont fehér vagy fekete-e.Ezt az osztályzást azért nevezzük bináris osztályzásnak mivel vannak a vonal feletti és a vonal alatti pontok, tehát két választási lehetőségünk van.A mi általunk használ program egy általunk megadot képen fogja végrehajtani a bináris osztályozást.
+        </para>
+        <para>
+            Megoldás forrása: <link xlink:href="https://github.com/nbatfai/nahshon/blob/master/ql.hpp#L64"></link>             
+        </para>           
+    </section>        
+        
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+</chapter>                

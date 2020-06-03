@@ -1,0 +1,263 @@
+<chapter xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0" xml:lang="hu">
+    <info>
+        <title>Helló, !</title>
+        <keywordset>
+            <keyword/>
+        </keywordset>
+    </info>
+
+     <section>
+        <title>FUTURE tevékenység editor</title>
+        <para>Ebben a feladatban tutorált Szegedi Csaba.</para>
+        <para>
+            Az volt a feladatunk, hogy javítsunk valamit az ActivityEditor.java JavaFX programon. A program rengeteg hibája közzül mi azt javitotuk ki, hogy egy mappában csa egy tevékenység hozzható létre. Tekintsük is meg ennek az okát:
+        </para>
+        
+            <programlisting language="java">
+<![CDATA[
+java.io.File f = new java.io.File(file.getPath() + System.getProperty("file.separator") + "Új altevékenység");
+
+if (f.mkdir()) {
+    javafx.scene.control.TreeItem<java.io.File> newAct
+        = new FileTreeItem(f, new javafx.scene.image.ImageView(actIcon));                           
+getTreeItem().getChildren().add(newAct);
+]]>
+            </programlisting>
+        <para>
+            Ha utánanézünk a java.io.File.mkdir()-nek akkor láthatjuk, hogy a java.io.File a fájl elérési útvonalát kell tartalmaznia és erre meghívva az mkdir() tagfüggvényt, létrehozza a mappát. Ellenben ha egy mappa már létezik az adott elérési utvonalon, akkor az mkdir nem tud létrehozni új mappát ugyanazon névvel. Ez fogja adni a hibánkat, de lásuk is enek a hibának a megoldását:
+        </para>
+<programlisting language="java">
+<![CDATA[
+int i = 1;
+    while (true) {
+        java.io.File f = new java.io.File(
+            file.getPath() + System.getProperty("file. ←-
+                separator") + "Új altevékenység" + i);
+        if (f.mkdir()) {
+            javafx.scene.control.TreeItem<java.io.File> newAct
+            // rr.println("Cannot create " + f.getPath())rr. ←-
+                println("Cannot create " +
+            // f.getPath())rr.println("Cannot create " + f. ←-
+                getPath())rr.println("Cannot
+            // create " + f.getPath()) = new javafx.scene. ←-
+                control.TreeItem<java.io.File>(f,
+            // new javafx.scene.image.ImageView(actIcon));
+            = new FileTreeItem(f, new javafx.scene.image. ←-
+                ImageView(actIcon));
+            getTreeItem().getChildren().add(newAct);
+        break;
+        } else {
+            i++;
+            System.err.println("Cannot create " + f.getPath());
+        }
+    }
+});
+]]>
+</programlisting>
+    <para>
+        Mint láthatjuk a problémát úgy oldottuk meg, hogy a mappa készítést egy ciklusba helyeztük ami az elérési úthoz hozzáadja az i változót. Ez a változó azt számolja, hogy hányszor akkartunk már új mappát létrehozni, ha a mappa létezik simán urjakezdjük eggyel nagyobb értékkel és a mappa nevének végre rakjuk a számot. Abban az esetben egy breakkel kilépünk a ciklusból. 
+    </para>
+    </section> 
+
+     <section>
+        <title>OOCWC Boost ASIO hálózatkezelése</title>
+        <para>
+            Ebben a feladatban a scanf szerepére kellet rámutatnunk a carlexer.ll kódban.
+        </para>
+            <programlisting language="c++">
+<![CDATA[
+while ( std::sscanf ( data+nn, "<OK %d %u %u %u>%n", &idd, &f, &t, &s, &n ) == 4 )
+{
+nn += n;
+gangsters.push_back ( Gangster {idd, f, t, s} );
+}
+]]>
+            </programlisting>
+        <para>
+            Az sscanf formázott stringből olvas be, erre azért van szükségünk mivel nem tudjuk, hogy hány gangster adatot tudunk majd beolvasni, ezért adig olvasuk be az adatokat amíg azok validak. Ennek ellenőrzésére pedig a sscanf kíváló mivel ez a beolvasot paraméterek számát jelöli. Ha ez négy lesz akkor egy gangster összes adatát beolvastuk és létrehozunk egy új gangster objektumot és beleteszük a vektorunkba.
+        </para>
+
+    </section>   
+
+     <section>
+        <title>SamuCam</title>
+        <para>
+            Ebben a feladatban a webcam kezelésére kellet rámutassunk a Samu projectben. A kamera kezeléséhez az openCv könyvtárat használjuk. Mivel nekünk a webcam kezelését kell tanulmányoznunk ezért mi a samuCam forrásfájlhoz kell nyulnunk.
+        </para>
+
+        <para>
+            Az alábbi kódrészben láthatjuk, hogy nyitunk egy video streamet, a videoCaptur open fügvénye pedig megnyitja a paraméterként kapot képet amit a mi esetünkben a webcamera fogja szolgáltatni. Itt még beálitjuk a video méretét és az FPS-ét is.
+        </para>
+        
+            <programlisting language="c++">
+<![CDATA[
+SamuCam::SamuCam ( std::string videoStream, int width = 176, int height = 144 )
+    : videoStream ( videoStream ), width ( width ), height ( height )
+{
+    openVideoStream();
+}
+    SamuCam::~SamuCam ()
+{
+}
+    void SamuCam::openVideoStream()
+{
+    videoCapture.open ( videoStream );
+    videoCapture.set ( CV_CAP_PROP_FRAME_WIDTH, width );
+    videoCapture.set ( CV_CAP_PROP_FRAME_HEIGHT, height );
+    videoCapture.set ( CV_CAP_PROP_FPS, 10 );
+}
+]]>
+            </programlisting>
+        <para>
+            A kép elemzésére szükségünk lesz egy CascadeClassifier-re amit még a futás kezdete előt betöltünk. Majd a load függvénnyel egy classifiert nyitunk meg amibe az arcot tároljuk: 
+        </para>
+        <programlisting language="c++">
+<![CDATA[
+cv::CascadeClassifier faceClassifier;
+    std::string faceXML = "lbpcascade_frontalface.xml"; // https://github.com/Itseez/opencv/tree/master/data/lbpcascades
+    if ( !faceClassifier.load ( faceXML ) )
+        {
+            qDebug() << "error: cannot found" << faceXML.c_str();
+            return;
+        }
+]]>
+            </programlisting>
+
+        <para>
+            A következö kódcsipetben 80 milliszekundumonkét, a read függvény segitségével, beolvasunk egy képkockét amit a cv::Mat tömbbe mentjük bele. Ezután átméretezük a képet és a color spacet átálitjuk grayscalere. Ezután az inputképen különböző méretu objektumokat kersünk a képen amihez a detectMultiScale függvényt használjuk. A találatokat egy listaként téritjük vissza. A talált képből QImage-t készítünk amit majd a SamuBrain fog feldolgozni.
+        </para>
+
+            <programlisting language="c++">
+<![CDATA[
+      while ( videoCapture.read ( frame ) )
+        {
+
+          if ( !frame.empty() )
+            {
+
+              cv::resize ( frame, frame, cv::Size ( 176, 144 ), 0, 0, cv::INTER_CUBIC );
+
+              std::vector<cv::Rect> faces;
+              cv::Mat grayFrame;
+
+              cv::cvtColor ( frame, grayFrame, cv::COLOR_BGR2GRAY );
+              cv::equalizeHist ( grayFrame, grayFrame );
+
+              faceClassifier.detectMultiScale ( grayFrame, faces, 1.1, 4, 0, cv::Size ( 60, 60 ) );
+
+              if ( faces.size() > 0 )
+                {
+
+                  cv::Mat onlyFace = frame ( faces[0] ).clone();
+
+                  QImage* face = new QImage ( onlyFace.data,
+                                              onlyFace.cols,
+                                              onlyFace.rows,
+                                              onlyFace.step,
+                                              QImage::Format_RGB888 );
+
+                  cv::Point x ( faces[0].x-1, faces[0].y-1 );
+                  cv::Point y ( faces[0].x + faces[0].width+2, faces[0].y + faces[0].height+2 );
+                  cv::rectangle ( frame, x, y, cv::Scalar ( 240, 230, 200 ) );
+
+
+                  emit  faceChanged ( face );
+                }
+
+              QImage*  webcam = new QImage ( frame.data,
+                                             frame.cols,
+                                             frame.rows,
+                                             frame.step,
+                                             QImage::Format_RGB888 );
+
+              emit  webcamChanged ( webcam );
+
+            }
+
+          QThread::msleep ( 80 );
+
+        }
+]]>
+            </programlisting>
+        <para>
+            A mi esetünkben még egy plusz átirásra is volt szükség mivel mi nem ip camerát használtunk hanem a laptop saját webcam-ját. Ez annyit fog csinálni hogy videoCapture.open nem egy fájl nevét hanem a kamera device ID-ját fogja megkapni.
+        </para>
+        <programlisting language="c++">
+<![CDATA[
+videoCapture.open (0);
+]]>
+            </programlisting>
+            <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Hello/SamuCam/samu.png" scale="20" />
+                </imageobject>
+        </mediaobject>
+    </section>   
+
+    <section>
+        <title>BrainB</title>
+        <para>
+            A BrainB már ismerösen hangozhat mivel ezzel már az első fejezetben foglalkoztunk, de ezuttal a Qt slot-signal mechanizmust kell bemutatnunk. Ez a Qt-ban nem másra jó mint objektunok közti kommunikáciora. Ez úgy műküdik, hogy  kibocsájt egy signált egy adott esemény következtére amit egy slot fog elkapni. A slot egy olyan függvény ami bizonyos signalok esetén mghívodnak. Egy signalt és egy slotot a connect függvényel tudjuk összekapcsolni. A BrainB projectben két ilyen connectet találhatunk a BrainBWin.cpp fájlban:
+        </para>
+        <programlisting>
+<![CDATA[
+        connect ( brainBThread, SIGNAL ( heroesChanged ( QImage, int, int ) ),
+                  this, SLOT ( updateHeroes ( QImage, int, int ) ) );
+
+        connect ( brainBThread, SIGNAL ( endAndStats ( int ) ),
+                  this, SLOT ( endAndStats ( int ) ) );
+]]>
+        </programlisting>
+        <para>
+            Az első connect azt csinálja, hogy ha a brainBThread-ben bekövetkezik a heroesChanged signal akkora a BrainBWin update-Heroes függvénye futt le, endAndStats esetén lejárt a futási idő minek hatására kiíródnak az eredmények.
+        </para>
+        <programlisting>
+<![CDATA[
+
+void BrainBThread::run()
+{
+    while ( time < endTime ) {
+        QThread::msleep ( delay );
+        if ( !paused ) {
+            ++time;
+            devel();
+        }
+        draw();
+    }
+    emit endAndStats ( endTime );
+}
+void BrainBWin::endAndStats ( const int &t )
+{
+    qDebug() << "\n\n\n";
+    qDebug() << "Thank you for using " + appName;
+    qDebug() << "The result can be found in the directory " + statDir;
+    qDebug() << "\n\n\n";
+    save ( t );
+    close();
+}
+]]>
+         </programlisting>
+                 <programlisting>
+<![CDATA[
+
+void BrainBWin::endAndStats ( const int &t )
+{
+qDebug() << "\n\n\n";
+qDebug() << "Thank you for using " + appName;
+qDebug() << "The result can be found in the directory " + statDir;
+qDebug() << "\n\n\n";
+save ( t );
+close();
+}
+]]>
+         </programlisting>
+        <para>
+            Illetve végül a felélesztet brainb:
+        </para>
+        <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Hello/BrainB/brainb.png" scale="20" />
+                </imageobject>
+        </mediaobject>
+        </section>                                                                        
+</chapter>                

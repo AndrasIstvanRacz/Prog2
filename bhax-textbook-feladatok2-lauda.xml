@@ -1,0 +1,331 @@
+<chapter xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0" xml:lang="hu">
+    <info>
+        <title>Helló, Lauda !</title>
+        <keywordset>
+            <keyword/>
+        </keywordset>
+    </info>
+
+     <section>
+        <title>Port Scan</title>
+        <para>Ebben a feladatban a port szkennelő forrásban a kivétel kezelés szerepére kellet rámutatnunk. Ennek bemutatására irtunk egy egyszerű programot. Ez mindössze anyit fog csinálni, hogy az 1024 alatti portokkal megprobál kapcsolatot létesíteni. Ha ez sikerül akkor kiírja, hogy figyel és bezárja a soketet, ha pedig nem akkor a kivételkezelés catch blokkjában kiírjuk hogy nem figyel.</para>
+        <programlisting language = "java">
+<![CDATA[
+public class PortScan {
+    public static void main(String[] args) 
+    {
+        for(int i=0; i<1024; ++i)
+            try {
+                java.net.Socket socket = new java.net.Socket(args[0], i);
+                System.out.println(i + " figyeli");
+                socket.close();
+            } catch (Exception e) 
+            {
+                System.out.println(i + " nem figyeli");
+            }
+    }
+}
+]]>
+        </programlisting> 
+        <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Lauda/Port.png" scale="60" />
+                </imageobject>
+        </mediaobject> 
+        
+    </section> 
+
+     <section>
+        <title>AOP</title>
+        <para>
+            Ebben a feladatban az LZWBinFába kelet beleszőnünk egy átfogo vonatkozást. Itt aspektus orientáltságról van szó. Ezek az aspektusok eltérhetnek majd az eredeti programban használt programozási nyelvtől de akár meg is egyezhetnek azzal. Ezek aspektusokat arra adnak lehetőséget, hogy az alpprogramunk müködésén tudunk változtatni atfogó vonatkozásokkal. Ahol az alapprogram és az aspektus kapcsolódik azt join pointnak nevezük.
+        </para>
+        <para>
+            Én a BinFa preorder postorder kiírást szöttem bele a kódba.
+        </para> 
+        <programlisting language = "java">
+<![CDATA[
+package szoves;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+
+	public aspect szoves {
+	
+		int melyseg = 0;
+		public pointcut kiir(LZWBinFa.Csomopont elem, java.io.PrintWriter os)
+		: call(public void kiir(LZWBinFa.Csomopont, java.io.PrintWriter)) && args(elem,os);
+	
+	after (LZWBinFa.Csomopont elem, java.io.PrintWriter os) : kiir(elem,os)
+		{
+		try {
+			
+			preOrder(elem,new PrintWriter("pre-order.txt"));
+		} catch (FileNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		melyseg = 0;
+		try {
+			postOrder(elem,new PrintWriter("post-order.txt"));
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		}
+
+	public void preOrder(LZWBinFa.Csomopont elem, java.io.PrintWriter os){
+		if (elem != null) {
+
+		      for (int i = 0; i < melyseg; ++i) {
+		        os.write("---");
+		      }
+		      os.print(elem.getBetu());
+		      os.print("(");
+		      os.print(melyseg - 1);
+		      os.println(")");
+		      ++melyseg;
+		      preOrder(elem.egyesGyermek(), os);
+		      preOrder(elem.nullasGyermek(), os);
+		      --melyseg;
+		      os.flush();
+		    }
+	}
+	
+	public void postOrder(LZWBinFa.Csomopont elem, java.io.PrintWriter os){
+		
+		if (elem != null) {
+		      ++melyseg;
+		      postOrder(elem.egyesGyermek(), os);
+		      postOrder(elem.nullasGyermek(), os);
+		      --melyseg;
+		 
+		      for (int i = 0; i < melyseg; ++i) {
+		        os.print("---");
+		      }
+		      os.print(elem.getBetu());
+		      os.print("(");
+		      os.print(melyseg - 1);
+		      os.println(")");
+		      os.flush();
+
+		    }
+	}
+}
+
+]]>
+        </programlisting>  
+        <para>
+            Láthatjuk, hogy maga az aspektus a kiir függvény meghívásakor kapcsolodik bele a LZWBinFa programba és kiegésziti a kiir függvényt a postoder és preorder faépítésel is.
+        </para>
+    </section>   
+
+
+    <section>
+        <title>Android játék</title>
+        <para>
+            Ebben a feladatban egy android játékot kellet írnunk. Fontos megemlíteni, hogy az általam elkészítet játék egy a kezdö android game developereknek szánt tutoriál alapján készült (ez a tutoriál szolgáltata a játékhoz használt pngket). Ennek fő oka az volt, hogy még sosem mélyedtem bele az android programozásba, nem igazán tudtam, hogy hol kezdjem a feladat megoldását. Mindezek elenére nagyon hasznosnak véltem ezt a feladatot ugyanis számomra ez rengeteg újdonságot tanított. De nézük is magát a játékot.
+        </para>
+        <para>
+            A játék maga nem bogyolúlt úszik egy kis hal amivel különböző bogyokat vehetünk fel. Ezek a bogyok közzül a sárga 10, a zöld pedig 15 pontot ér. Végül pedig vannak a piros golyok amiknek a felvétele életvesztésel jár. A harmadik piros golyó felvétele után a játék véget ér, és láthatjuk, hogy mennyi pontot értünk el.
+        </para>
+        <para>
+            Most, hogy nagyábból tudjuk, hogy mit csinál a játék nézzük meg magát a kódot.
+        </para>
+        
+        <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Lauda/AndroidGame/Layout1.png" scale="40" />
+                </imageobject>
+        </mediaobject>
+        <para>
+            Láthatjuk, hogy elöször a kis kezdöképernyönk layoutját hozzuk létre, adunk neki egy hátteret illetve elhelyezünk rajta egy szövegdobozt iletve egy képet.
+        </para>
+        <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Lauda/AndroidGame/Activity1.png" scale="40" />
+                </imageobject>
+        </mediaobject>
+        <para>
+            Az onCreate metódusban láthatjuk, hogy ez a layout mindösze 2000 milliszekundumig lesz látható aztán meghivásra kerül a mainActivity.
+        </para>
+        <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Lauda/AndroidGame/Activity2.png" scale="40" />
+                </imageobject>
+        </mediaobject>
+        <para>
+            A mainActivity osztályban történik maga a játék futása amit ugy valositotuk meg hogy létrehoztunk egy gameView változót ami a játék layoutja és ezen keresztül  hívodik meg a flyingFishView osztály ami a játék szabályait illetve a mozgó objetumokat fogja tartalmaznia.
+        </para>
+        <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Lauda/AndroidGame/F1.png" scale="50" />
+                </imageobject>
+        </mediaobject>
+        <para>
+            Mint a képen láthatjuk a flyingFishView függvényben a beállitjuk, azokat az objektumokat amiket majd a gameViewban meg szeretnénk jeleníteni például a halacskát, a felvehetü golykat, az életet jelzö szivet és a háttér képét is.
+        </para>
+
+        <programlisting language = "java">
+<![CDATA[
+protected void onDraw(Canvas canvas)
+    {
+        super.onDraw(canvas);
+
+        canvasWidth = canvas.getWidth();
+        canvasHeight = canvas.getHeight();
+
+        canvas.drawBitmap(backgroundImage, 0,0,null);
+
+        int minFishY = fish[0].getHeight();
+        int maxFishY = canvasHeight - fish[0].getHeight()*3;
+        fishY = fishY + fishSpeed;
+
+        if (fishY < minFishY)
+        {
+            fishY = minFishY;
+        }
+        if (fishY > maxFishY)
+        {
+            fishY = maxFishY;
+        }
+        fishSpeed = fishSpeed + 2;
+
+        if(touch)
+        {
+            canvas.drawBitmap(fish[1],fishX,fishY,null);
+            touch = false;
+        }
+        else
+        {
+            canvas.drawBitmap(fish[0], fishX,fishY,null);
+        }
+
+        yellowX = yellowX - yellowSpeed;
+
+        if(hitBallChecker(yellowX,yellowY))
+        {
+            score = score + 10;
+            yellowX = -100;
+        }
+
+        if(yellowX < 0)
+        {
+            yellowX = canvasWidth + 21;
+            yellowY = (int) Math.floor(Math.random() * (maxFishY-minFishY)) + minFishY;
+        }
+        canvas.drawCircle(yellowX,yellowY,25,yellowPaint);
+
+
+        greenX = greenX - greenSpeed;
+
+        if(hitBallChecker(greenX,greenY))
+        {
+            score = score + 15;
+            greenX = -100;
+        }
+
+        if(greenX < 0)
+        {
+            greenX = canvasWidth + 21;
+            greenY = (int) Math.floor(Math.random() * (maxFishY-minFishY)) + minFishY;
+        }
+        canvas.drawCircle(greenX,greenY,10,greenPaint);
+
+
+        redX = redX - redSpeed;
+
+        if(hitBallChecker(redX,redY))
+        {
+            redX = -100;
+            lifeCounterOfFish--;
+
+            if (lifeCounterOfFish == 0)
+            {
+                Toast.makeText(getContext(), "Game Over", Toast.LENGTH_SHORT).show();
+
+                Intent gameOverIntent = new Intent(getContext(), GameOverActivity.class);
+                gameOverIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                gameOverIntent.putExtra("Score", score);
+                getContext().startActivity(gameOverIntent);
+            }
+        }
+
+        if(redX < 0)
+        {
+            redX = canvasWidth + 21;
+            redY = (int) Math.floor(Math.random() * (maxFishY-minFishY)) + minFishY;
+        }
+        canvas.drawCircle(redX,redY,50,redPaint);
+
+        canvas.drawText("Score : " + score, 20,60,scorePaint);
+
+        for (int i=0; i<3; i++)
+        {
+            int x = (int) (580 + life[0].getWidth() * 1.5 * i);
+            int y = 30;
+
+            if (i < lifeCounterOfFish)
+            {
+                canvas.drawBitmap(life[0], x,y,null);
+            }
+            else
+            {
+                canvas.drawBitmap(life[1], x,y,null);
+            }
+        }
+
+    }
+]]>
+        </programlisting>
+        <para>
+            Az elobb említet objektumokat itt az onDraw-ban fogjuk elhelyezni a vásznon. Láthatjuk, hogy a golyókat egy random szám segitségével helyezük el, erre azért vna szükség, hogy a golyok ne legyenek kiszámithatóak a felhasználó számára. Itt még láthatjuk, hogy megadjuk a golyok méretét, sebeségét, illetve, hogy hány pontot fognak érni. Továbbá if elsek segitségével itt figyeljük, hogy a halacska milyen golyot talált el illetve a játék erre, hogy reagáljon. Azt hogy találtunk e el golyot a hitBallChecker metódus figyeli.
+        </para>
+                <programlisting language = "java">
+<![CDATA[
+public boolean hitBallChecker(int x, int y)
+    {
+        if( fishX < x && x < (fishX + fish[0].getWidth()) && fishY < y && y < (fishY + fish[0].getHeight()))
+        {
+            return true;
+        }
+        return false;
+    }
+]]>
+        </programlisting>
+        <para>
+            A hitBallChecker csak anyit csinál, hogy összeveti a golyok és a halcska pozicioját és ha megegyezik akkor truet térit vissza egyébként pedig falset.
+        </para>
+        <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Lauda/AndroidGame/Activity3.png" scale="40" />
+                </imageobject>
+        </mediaobject>
+        <para>
+            Ha elfogyot az összes életünk a játék végetér és a gameView layoutot leváltja a GameOver layout ami láthatjuk hogy hány pontot értünk el, illetve ha tovább szeretnénk játszani akkor van egy play again gomb is.
+        </para>
+        <para>
+            És végül lásunk néhány képet a játékról:
+        </para>
+        <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Lauda/AndroidGame/App.png" scale="40" />
+                </imageobject>
+        </mediaobject>
+        </section>  
+
+
+    <section>
+        <title>Junit teszt</title>
+        <para>
+            Ebben a feladatban a https://progpater.blog.hu/2011/03/05/labormeres_otthon_avagy_hogyan_dolgozok_fel_egy_pedat poszt kézzel számjtott mélységét és szórását kellet egy Junit tesztbe beledolgozni. 
+        </para>
+        <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Lauda/JunitTest/Junit.png" scale="40" />
+                </imageobject>
+        </mediaobject>
+        <para>
+            Mint láthatjuk a posztban található bitsorozatot használtuk. Az egyBitFeldog metódussal fogjuk feldolgozni a karakterenként a megadot sztring char tömb változatát. Végül az assertEquals metódussal ellenőrizzük, hogy a számítot értékek megegyeznek-e a mi értékeinkkel. Mint láthatuk a fenti képen az értékeink megegyeztek igy, azaz a programunk jol müködik.
+        </para>
+    </section>                                                                          
+</chapter>                

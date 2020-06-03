@@ -1,0 +1,60 @@
+<chapter xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0" xml:lang="hu">
+    <info>
+        <title>Helló, Gutenberg!</title>
+        <keywordset>
+            <keyword/>
+        </keywordset>
+        <cover>
+            <para>
+                Programozás tankönyvek rövid olvasónaplói.
+            </para>
+        </cover>
+    </info>
+    <section>
+        <title>Programozási alapfogalmak</title>
+        <para><command>1. Fejezet: Bevezetés</command></para>
+        <para>         
+            Ebben a fejezetben megismerkedhetünk az alapvető fogalmakkal.Továbbá olvashatunk arról, hogy mi alapján osztályozzuk a programnyelveket.Megismerjük a programnyelvek két csoportjait: imperatív, deklaratív illetve, tudatja velünk hogy mik sorolhatók az egyéb nyelvek közé.       
+        </para>
+        <para><command>2. Fejezet: Alapelemek</command></para>
+        <para>         
+            A második fejezetben egy programozási nyelv alapeszközeit, alapfogalmait ismerjük meg.Részletesen tárgyalunk a karakterkészletről illetve a többkarakteres szimbólumokról.A második fejezet negyedik részétől kezdve a különböző adattípusokról, konstansokról, mutatókról és változókról olvashatunk.       
+        </para>
+        <para><command>3. Fejezet: Kifejezések</command></para>
+        <para>         
+            Ebben a fejezetben a kifejezésekröl beszélünk.Megnézük, hogy egy kifejezés milyen konponensekből tevődnek össze (operandusok, operátorok, zárojelek).Megtudjuk, hogy egy kifejezésnek három alakja lehet inflix, prefix és postfix.Ezután rátérunk a C nyelvben használt operátorok megismerésére.    
+        </para>
+    </section>        
+    <section>
+        <title>Programozás bevezetés</title>
+      
+        <para><command>1. Fejezet: Alapismeretek</command></para> 
+        <para>                
+            Az első fejezetben arról olvshatunk, hogy, hogyan kell elkezdeni egy számunkra új programozási nyelv tanulását.Továbbá ebben a fejezetben megismerkedhetünk a C alapjaival mint például a kiíratás, változók és konstansok megadása, ciklusok.Ezeken kivül bevezet minket a tönbök és függvények világába is, illetve röviden összefoglalta, hogy mivel is fog foglalkozni a könyv a továbbiakban.
+        </para>
+        <para> <command>2. Fejezet: Típusok, operátorok és kifejezések</command></para> 
+        <para>
+            Ebben a részben a különboző declarációkról részletesen olvashatunk.Arról, hogy milyen módon érdemes a változó neveket létrehozni illetve, hogy vannak a C nyelv által lefoglalt kifejezések, illetve, hogy meg kell adnunk a változók típusát is.Továbbá ebben a részben olvashatunk a különböző (aritmetikai,relácios, logikai, inkrementáló, dekrementáló és értékadó) operátorokról is. 
+        </para>
+        <para> <command>3. Fejezet: Vezérlési szerkezetek</command></para> 
+        <para>
+            Itt beszélünk az if-else utsításal való döntésekröl, hogy hol adhatjuk meg a feltételt illetve, hogy hova kell írjuk a végrehajtani kívánt utasítást.Beszélünk továbbá a switch utasításról ahol megemlítődi a break parancs amit majd részletezni fog.Ez utén rátérunk a while, a for és a do while ciklusok részletezésére.Ezt a fejezetet a ritkán használt continue-val és goto-val zárjuk.
+        </para>        
+    </section>        
+    <section>
+        <title>Programozás</title>                
+            <para><command>1. Fejezet: Bevezetés</command></para>
+            <para><command>2. Fejezet: A C++ nem objektumorientált újdonságai</command></para> 
+        <para>                
+            A második fejezetben a C és a C++ nyelv összehasonlítását láthatjuk.Elöször a függvényparaméterek megadását hasonlitjuk össze.Ezzutá olvashatunk, hogy milyne módon declarálhatunk változókat, illetve itt még megemlítjük a változótipusokat is.Ezek után visszatérunk a függvényekre, hogy, hogyan terhelhetünk túl őket.A fejezetet a praméterátadással és referenciatípusokkal zárjuk.  
+        </para>
+        <para><command>3. Fejezet: Objektumok és osztályok</command></para> 
+        <para>                
+            Ebben a fejezetben az osztályokról olvashatunk, arról, hogy mit nevezzünk osztálynak, mire használjuk azokat, illetve megemlítődik még az objektumok fogalma, illetve az ezeken belüli adatvédelem és adatrejtés is.Itt továbbá részletes betekintést kapunk a konstruktorok és destruktorok világába és beszélünk a dinamikus adatkezelésről.Ez után visszatérünk a konstruktorkra nevezetesen a másoló konstruktort elemzük ki benne és olvashatunk a tagfüggvényekről is.Továbbá a könyv ezen részében olvasunk a frien függvényekről, a statikus tagokról és a beágyazot definiciókról.
+        </para>
+        <para><command>4. Fejezet: Konstansok és inline függvények</command></para> 
+        <para>                
+            A könyv negyedik fejezete először bemutatja nekünk, hogy a konstansokat hol és hogyan érdemes használni.Ezután részletesen olvashatunk a konstansok fontosabb fajtáiról például a konstans változókról, pointerekről, függvényparaméterekről, tagváltozókról stb.Információt kapunk arról, hogy abban az esetben ha egy konstans tagfüggvény egy adot változóját meg akarjuk változtatni akkor ezt úgy tehetjük meg, hogy a változót mutable-ként kel definiálnunk.Ezen fejezet második és egyben utólsó részében az inline függvényekről beszünk. 
+        </para>
+    </section>        
+</chapter>                

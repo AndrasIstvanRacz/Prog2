@@ -1,0 +1,189 @@
+<chapter xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0" xml:lang="hu">
+    <info>
+        <title>Helló, Calvin !</title>
+        <keywordset>
+            <keyword/>
+        </keywordset>
+    </info>
+
+     <section>
+        <title>MNIST</title>
+        <para>Ebben a feladatban a MNIST python programot kellet felélesztenünk illetve egy saját képet kellet felismertesünk vele. Ez azért volt érdekes mivel ez a program egy tensorflow-s gépi tanulást reprezentál, pontosabban a kézírás felismerését tanitjuk meg neki.</para>
+
+        <para>A kód felélesztése nem volt anyira nehéz mivel csak az elavult szintaktikát kellet átírni az ujabb verzionak megfelelően. Elöször is a 
+
+        <programlisting language = "python">
+<![CDATA[
+cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(y, y_))
+]]>
+        </programlisting>
+        sort át kell irnunk a
+        <programlisting language = "python">
+<![CDATA[
+cross_entropy= tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits = y, labels=y_))
+]]>
+        </programlisting>
+        sorra.
+        </para>
+        <para>Ez után már csak egy változtatást kel eszközöljünk a kódba ahhoz, hogy a programot müködésre bírjuk. Ezt pedig nem máshol kell megtenünk mit a readimg függvény img változó megadásában.
+        <programlisting language = "python">
+<![CDATA[
+img = tf.image.decode_png(file,1)
+]]>
+        </programlisting>
+        Mint láthatjuk a file után veszővel elválasztva írtuk egy egyest, erre azért volt szükség mert az új verzióban már meg kel adin a decode_png függvénynek a color channel-ek számát ami a mi esetünkben azért egy mivel a képünk grazscale lesz.
+        </para>
+        <para>
+        Most, hogy végeztünk a szükséges változtatásokkal és újra működik a program áttérhetünk a feladat második részére és beadhatjuk neki a saját képünket.
+        <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Calvin/MNIST/gray.png" scale="120" />
+                </imageobject>
+        </mediaobject>
+        Ez ugy tudjuk megteni, hogy a readimg fügvénybe a read file függvénynek megadjuk a képünk nevét. Itt meg kell említeni, hogy ennek a képnek 28*28 asnak kell lennie, illetve ha lehet fekete hátéren fehér betüszin legyen. Ha beadtuk a képet akkor a programot futtatva láthatjuk, hogy a program 0.9133 pontosággal fogja megálapitani, az általunk megadot számról, hogy az melyik szám. Illetve kirajzolja a beadot számunkat grayscalezve.
+        <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Calvin/MNIST/SoftMNIST1.png" scale="40" />
+                </imageobject>
+        </mediaobject>
+        Ha bezárjuk a megyilt ablakot amin a nyolcasunkat láthatjuk akor a program kiirja, hogy a hálozat ezt minek ismeri fel.
+        <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Calvin/MNIST/SoftMNIST2.png" scale="50" />
+                </imageobject>
+        </mediaobject>
+        Mint láthatjuk a képünket a program 8-nak ismerte fel ami azt jelenti, hogy a programunk jól müködik.
+        </para>
+        
+
+        
+    </section> 
+
+     <section>
+        <title>Deep MNIST</title>
+        <para>
+            Ez a feladat sok aspektusában megegyezik az elöző feladattal csupán annyi különbség van, hogy itt az MNIST program mély változatával fogunk foglalkozni. A mély vérzió abban különbozik az elöző feladatban használt Soft verziótól, hogy it a képet már több köztes rétegen szürjük át.
+        </para>
+        <para>
+            Mint már az elöbb emlitetem a feladatunk itt is ugyan az, saját kép beadása a programnak. Itt viszont több módosítást kellet végeznünk mivel a kód sem fájlbeolvasásra sem a beolvasot kép vizsgálatár, illetve anak eredményének kiírására sem volt képes. De nézük is, hogy mit modosítotunk.
+            Elöszöris be kelett olvasnunk a képünket ami most a mi esetünkbe az elözö feladatban használt nyolcas lesz. Ezt ugy oldotuk meg, hogy létrehoztuk a DeepMnist kódban is a readimg fügvényt.
+        <programlisting language = "python">
+<![CDATA[
+def readimg():
+    file = tf.io.read_file("gray.png")
+    img = tf.image.decode_png(file,1)
+    return img
+]]>
+        </programlisting>
+        Mit láthatjuk ez hasonló az elözö feladatban használtal, a file változó megkapja a képet aminek a grayscalelt változatát átadjuk az img változónak amivel a programunk majd dolgozni fog. Ezután áttérhetünk a kép felismerésére.
+        <programlisting language = "python">
+<![CDATA[
+    print("-- A sajat kezi 8-asom felismerese, mutatom a szamot, a tovabblepeshez csukd be az ablakat")
+
+    image = img.eval(session=sess)
+    image = image.reshape(28*28)
+
+    matplotlib.pyplot.imshow(image.reshape(28, 28), cmap=matplotlib.pyplot.cm.binary)
+    matplotlib.pyplot.savefig("8.png")
+    matplotlib.pyplot.show()
+
+    classification = sess.run(tf.argmax(y_conv, 1), feed_dict={x: [image], keep_prob: 1.0})
+    saver.save(sess, "model.ckpt")
+    print("-- Ezt a halozat ennek ismeri fel: ", classification[0])
+]]>
+        </programlisting>
+        Mint láthatjuk ez majdnem teljesen megegyezik a Mnistben lévő vizsgálattal, csupán annyi dolgunk volt vele, hogy bemásoltuk a session-ünk végére illetve megadtuk az img.eval-nak a mi session-ünket. 
+
+        </para> 
+        
+        <para>
+            Ha a fenti lépéseket elvégeztük akkor már csak a futtatás van hátra. A felismerni kívánt kép az elöző feladatban használt kép lesz. A program futása valamenyivel tovább tart mint a Soft verziójé de 10 percen belül ez is végzet. De lásuk is mit kaptunk:
+        </para>
+        <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Calvin/mnist/Run1.png" scale="40" />
+                </imageobject>
+        </mediaobject>
+         <para>
+            Mint láthatjuk a program megkapta a nyolcasunkat majd a felugró ablakot bezárva láthatjuk, hogy a program a képet nyolcasnak ismerte fel, úgy ahogy azt el is vártuk tőle.
+        </para>
+        <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Calvin/mnist/Run2.png" scale="40" />
+                </imageobject>
+        </mediaobject>
+    </section>   
+
+
+    <section>
+        <title>Android telefonra a TF objektum detektálója</title>
+        <para>
+            Ebben a feladatban a TensorFlow objektum detektálóját kellet letöltenünk és kipróbálnunk. Ezt kétféle képen lehetet megcsinálni, az egyik hogy letültjük az apk-t és egyszerüen telepítjük a telefonra vagy leklónozuk a tensorflow github repóját és android stúdióba betöltve magunknak hozzuk létre az apk-t.
+        </para>
+        <para>
+            Nézzük is meg az appot müködése közben:
+        </para>
+        <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Calvin/AndroidTF/TF1.png" scale="20" />
+                </imageobject>
+        </mediaobject>
+        <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Calvin/AndroidTF/TF2.png" scale="20" />
+                </imageobject>
+        </mediaobject>
+        
+        </section>  
+
+
+    <section>
+        <title>Minecraft Malmö</title>
+        <para>
+            Ebben a feladatban a Microsoft Minecraft Malmö projektjével kellet foglalkoznunk méghozzá az ágens programozásával. Prog 1-en már foglalkoztunk a kérdésel és létre is hoztunk egy ágenst ami a körülőtte lévö blokkokat figyelve fedezte fel a világot. Most viszont egy kicsit más irányból közelítetük meg a dolgokat.
+        </para>
+        <para>
+            Az ágens a világ legenerálása után elkezd hatadni előre a világban, majd amikor akadájba ütközik nem megvizsgálni fogja a maga körül lévő blokkokat hogy merre és hogyna tud majd továbhaladni hanem random fog választani egy cselekvéssorozatokat tartalmazó listból. Ez azért érdekes mivel annak elenére, hogy az ágens tudná, hogy mi van körülőtte a perceken keresztül tartó futtatáson keresztül nem halt meg sőt olyan helyzetbe se került amiből aránylag rövid idő alatt ki ne jött volna. De nézünk bele a kódba egy kicsit.
+        </para>   
+        <para>
+            A könyv elsö fejezetében az ágens programozásának alapjait már kifejtetem szóval ezekre most nem fogok kitérni. Elöször is nézük meg a listánkat:
+        </para>  
+        <programlisting language = "python">
+<![CDATA[
+    commandSequences=[
+    "jump 1; move 1; wait 1; jump 0; move 1; wait 2",
+    "turn 0.5; wait 1; turn 0; move 1; wait 2",
+    "turn -0.5; wait 1; turn 0; move 1; wait 2",
+    "move 0; attack 1; wait 5; pitch 0.5; wait 1; pitch 0; attack 1; wait 5; pitch -0.5; wait 1; pitch 0; attack 0; move 1; wait 2",
+    "move 0; pitch 1; wait 2; pitch 0; use 1; jump 1; wait 6; use 0; jump 0; pitch -1; wait 1; pitch 0; wait 2; move 1; wait 2"
+]
+]]>
+        </programlisting>
+        <para>
+            Mint láthatjuk az ágensünk mindössze öt lépéssorozatot fog használni, mint láthatjuk az első három sorozat csak mozgásra vonatkozó parancsokat tartalmaz míga az utolsó ketö már blokkok kiütését és építést is tartalmaz. 
+        </para>   
+        <programlisting language = "python">
+<![CDATA[
+    if currentSequence == "" and currentSpeed < 50 and waitCycles == 0: 
+        currentSequence = random.choice(commandSequences)  
+        print("Stuck! Chosen programme: " + currentSequence)
+
+]]>
+        </programlisting>
+        <para>
+            A fent látható rész a program egyik legfontosab része ugyanis ez fog reagálni az ágens beragadására, méghozzá ugy, hogy megnézi azt, hogy van-e vérehajtandó parancsunk. Ezt ugy teszük meg, hogy megvizsgáljuk, hogy a currentSequence üres-e , figyeljük, hogy csökkent-e az ágens sebessége illetve, hogy várakozás ciklusba vagyunk-e. Ha ez a három feltétel teljesül akkor az ágens beragadt igy a commandSequences-ből random választunk egy tevékenységsorozatot és odaadjuk a currentSequence-nek.
+        </para>
+        <para>
+            És nézük is meg élesben:
+        </para>
+        <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Calvin/MalmoRun.png" scale="40" />
+                </imageobject>
+        </mediaobject>
+        <para>
+            Mint láthatjuk a terminálon láthatjuk hogy minden egyes beragadás után random választot egy sorozatot majd végrehajtota azt. Ez nem a legszakszerübb ágens amit írni lehet ugyanakkor láthatjuk, hogy a random tevékenységek milyen gyakorisággal lesznek hasznosak illetve, hogy medig lehet túlélni a játékot ezen modszer alkalmazásával.
+        </para>
+
+    </section>                                                                          
+</chapter>                

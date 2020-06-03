@@ -1,0 +1,702 @@
+<chapter xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0" xml:lang="hu">
+    <info>
+        <title>Helló, Stroustrup!</title>
+        <keywordset>
+            <keyword/>
+        </keywordset>
+    </info>
+    
+    <section>
+        <title>JDK osztályok</title>
+        <para>
+        Ebben a feladatban írnunk kellet egy olyan Boost C++ programot amely kilistáza a JDK összes osztályát. Másszóval végig kell menünk a JDK src folderén és megszámolni, hogy hány .java file található benne.
+        </para>
+        <programlisting language="c++">
+<![CDATA[
+#include <boost/filesystem.hpp>   
+#include <iostream>
+using namespace std;
+int main(int ac, char** av)
+{
+   string extension;
+   int count = 0;
+   boost::filesystem::recursive_directory_iterator iterator(string("/mnt/d/Prog/Prog2Konyv/source/MasodikFejezet/Stroustrup/src"));
+   while(iterator != boost::filesystem::recursive_directory_iterator())
+   {
+      string extension = boost::filesystem::extension(iterator->path().filename());
+         if( boost::filesystem::is_regular_file(iterator->path()) && extension == ".java"){
+            count++;
+         }
+      ++iterator;   
+   }
+   cout << count << endl;
+   return 0;
+}
+]]>
+        </programlisting>
+
+        <para>
+        A kódot végigtanulmányozva láthatjuk, hogy az src directory végigjárására a 
+        </para>
+        <para>
+        boost::filesystem::recursive_directory_iterator
+        </para>
+        <para> 
+        használtuk, ami mint neve is mutatja rekurzívan bejárja src könyvtárat. Innen pedig már csak anyi van hátra, hogy meghatározuk, hogy melyik filenak van .java kiterjesztése, amit a 
+        </para>
+        <para>
+        boost::filesystem::extension-el
+        </para>
+        <para>
+        lehet meghatározni, és ezeket a count változonkba összeszámoljuk. Itt viszont egy hiba csuszott a rendszerbe mivel a boost::filesystem::extension úgy határozza meg egy fájl kiterjesztését, hogy az utolsó ponttól kezdve levágja a file nevének végét és ennek kovetkeztében egy olyan mappát is beleszámolt aminek a nevének .java volt a vége. De mint tudjuk a hiba adig nem válik ténylegesen hibává amig hajlandóak vagyunk kijavitani azt, és ezt meg is tetük a is_regular_file-al ami azt adja meg, hogy a vizsgált elemnek filenak kell lennie. És ezzel imáron pontos eredményt kaptunk( a find $directory -type f -name "*.java" parancs pontosan ugyan anyi fájlt adot vissza illetve a windows beépítet keresője is ezt az eredményt erősítete meg).
+        </para>
+        <mediaobject>
+        <imageobject>
+            <imagedata fileref="source/MasodikFejezet/Stroustrup/ListingEredmeny.png" scale="70" />
+        </imageobject>
+    </mediaobject>
+    </section>
+
+    <section>
+        <title>Hibásan implementált RSA törése és összefoglaló összevonva</title>
+        <para>
+            A feladatunk az RSA törés hibás implementálása volt, de, hogy ezt meg tudjuk valósítani először az RSA titkosítást kell megismernünk.
+        </para>
+        <para>
+          Az RSA titkosítás egy olyan rendszer, amely megoldja a kriptográfia egyik legnagyobb problémájat: <command>Hogyan lehet elküldeni valakinek kódolt üzenetet</command> anélkül, hogy az üzenetet ismernénk ?
+        </para>
+        <para>
+          Tegyük fel, hogy valakivel valami titkosat akarunk közölni de nem tartózkodik a közvetlen közelünkbe. Erre megoldást jelenthet az, hogy felhívjuk telefoneon vagy leírjuk mondandónkat és elküldjük üzenet formájában de ezeket könyen lehalgathatjuk. Ezt pedig fontos titok esetén nem engedhetjük meg magunknak. Erre a problémára nyújt megoldást a titkosítá. Ez anyit jelent, hogy az üzenethez hozzárendelünk valamilyen kódot ami értelmetlenné alakitja az üzenetet. Ha a kódunk elég bonyolúlt akkor az üzenethez csak azok féernek hozzá akik ismerik a kódot. Ezzel csak az az egy probléma van ha a kódot nem tudjuk előzőleg megosztani a másik féllel akkor nem tudja majd dekódolni az üzenetünket. Ezt a kriptográfiai problémát az olyan nyilvános kulcsú titkosítási rendszerek oldoták meg mint például az RSA.
+        </para>
+        <para>
+          Az RSA titkosítás alatt az üzeneteket egy nyilvános kulcsnak nevezett kóddal titkosítják, amely nyíltan megosztható. Az RSA algoritmus megkülönböztetett matematikai tulajdonságai miatt, miután egy üzenetet titkosítottak a nyilvános kulccsal, csak egy másik kulccsal lehet visszafejteni, az úgynevezett magánkulcsot. Minden RSA felhasználó rendelkezik kulcspárral, amely nyilvános és magán kulcsból áll. Ahogy a neve is sugallja a privát kulcsot titokban kell tartani.
+        </para>
+        <para>
+          James H. Ellis az 1970-es évek elején tette közzé az első nagy fejleményt, amelyet most nyilvános kulcsú kriptográfiának hívunk. Ellis nem találta meg a módját a munkájának végrehajtására, de ezt kollégája, Clifford Cocks továbbfejlesztette, és mostanáig RSA titkosításnak nevezzük. Malcolm J. Williamson, egy másik munkatárs, kitalált egy sémát, amely lehetővé tette két fél számára titkosítási kulcs megosztását, még akkor is, ha a csatornát ellenfelek figyelték meg. Ezt a munkát az Egyesült Királyság hírszerző ügynöksége, a Kormányzati Kommunikációs Központ (GCHQ) végezte, amely a felfedezést minősítette . Részben a technológiai korlátok miatt a GCHQ abban az időben nem látta a nyilvános kulcsú kriptográfia alkalmazását, így a fejlesztés üresen állt a polcon. Csak 1997-ben szüntették meg a munkát, és elismerték az RSA eredeti feltalálóit.
+        </para>
+        <para>
+        <command>Az RSA működési elve</command>
+        </para>
+        <para>
+          Az RSA titkosításhoz két kulcs, egy nyílt és egy titkos tartozik. A nyílt kulcs ismert, és ez alapján kódolhtják a nekünk szánt üzeneteket. A nyílt kulccsal kódolt üzenetet csak a titkos kulccsal tudjuk „megfejteni”. Az RSA-eljáráshoz a következő módon generáljuk a kulcsokat: Választunk két nagy prím számot, a kettő szorzata lesz az N (ez lesz a modulusa mind a nyilvános, mind a titkos kulcsnak). Számoljuk ki az Euler-féle phi függvény értékét N-re: phi(N)=(p-1)(q-1). Válasszunk egy olyan egész számot, e-t melyre teljesül <![CDATA[1 < e < phi(N)]]>, és e és phi(N) legnagyobb közös osztója 1. Ezután Számítsuk ki d-t, hogy következő kongruencia teljesüljön de≡1 (mod phi(N)). A nyilvános kulcs az N modulusból és a nyilvános e kitevőből áll. A titkos kulcs az N modulusból és a titkos d kitevőből áll,melyeket természetesen nem osztunk meg mással. Üzentküldéskor például A továbbítja a nyilvános kulcsát <![CDATA[(N & e)-t]]> B-nek és a titkos kulcsát titokban tartja. B ezután szeretné elküldeni üzenetét (M) A-nak. Először is M-et számokka alakitja darabolja úgy, hogy a kapott m értékre igaz legyen: <![CDATA[m < N ]]>. Ezután kiszámítja c kódszöveget a következő módon: c=m^2 mod N. Ez gyorsan végezhető az ismételt négyzetre emeléses hatványozással. B ezután továbbítja „üzenetét” A-nak. Dekódoláskor A saját titkos kulcsát, d-t használva vissza tudja fejteni m-et c-ből úgy, hogy M=c^d mod N Tudva m-et vissa tudja kapni az eredeti szöveg üzenetet M-et.
+        </para>
+        <para>
+          Tömören ez a lényege az RSA titkosításnak visszont nekünk egy hibásan müködő RSA-t kellet implementálnunk. Ez attól fog hibásan müködni mivel a szöveg minden karakterét külön fog kódolni ennek eredménye lesz az, hogy karakterenként lesz egy kulcspárunk. Ilyen módon visszont a szöveget nem tudjuk dekódolni mivel ahhoz az összes kulcsparra szükség lenne. Egy ilyen kódolást fltörni a kulcsok nélkül szinte lehetetlen.
+        </para>
+        <para>
+        <command>A hibás RSA kódóló</command>
+        </para>
+        <programlisting language="java">
+<![CDATA[
+import java.math.BigInteger;
+import java.security.SecureRandom;
+import java.util.Comparator; 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+    
+
+public class RSA {
+   private final static BigInteger one      = new BigInteger("1");
+   private final static SecureRandom random = new SecureRandom();
+
+   private BigInteger privateKey;
+   private BigInteger publicKey;
+   private BigInteger modulus;
+
+   // generate an N-bit (roughly) public and private key
+   RSA(int N) {
+      BigInteger p = BigInteger.probablePrime(N/2, random);
+      BigInteger q = BigInteger.probablePrime(N/2, random);
+      BigInteger phi = (p.subtract(one)).multiply(q.subtract(one));
+
+      modulus    = p.multiply(q);                                  
+      publicKey  = new BigInteger("65537");     // common value in practice = 2^16 + 1
+      privateKey = publicKey.modInverse(phi);
+   }
+
+
+   BigInteger encrypt(byte[] bytes) {
+       BigInteger swap = new BigInteger(bytes);
+      return swap.modPow(publicKey, modulus);
+   }
+
+   BigInteger decrypt(BigInteger encrypted) {
+      return encrypted.modPow(privateKey, modulus);
+   }
+
+   public String toString(BigInteger decrypt) {
+	   
+	   byte[] array = decrypt.toByteArray();
+	   if (array[0] == 0) {
+	       byte[] tmp = new byte[array.length - 1];
+	       System.arraycopy(array, 1, tmp, 0, tmp.length);
+	       array = tmp;
+	   }
+	   String str = new String(array, StandardCharsets.UTF_8);
+	   return str;
+   }
+ 
+   public static void main(String[] args) {
+	   
+    int N = Integer.parseInt(args[0]);
+    RSA key = new RSA(N);
+    System.out.println("key = " + key);
+
+    // create random message, encrypt and decrypt
+    // BigInteger message = new BigInteger(N-1, random);
+
+    //// create message by converting string to integer
+    String s = "The story of Shakespeare's Hamlet was derived from the legend of Amleth, preserved by 13th-century chronicler Saxo Grammaticus in his Gesta Danorum, as subsequently retold by the 16th-century scholar François de Belleforest. Shakespeare may also have drawn on an earlier Elizabethan play known today as the Ur-Hamlet, though some scholars believe Shakespeare wrote the Ur-Hamlet, later revising it to create the version of Hamlet we now have. He almost certainly wrote his version of the title role for his fellow actor, Richard Burbage, the leading tragedian of Shakespeare's time. In the 400 years since its inception, the role has been performed by numerous highly acclaimed actors in each successive century.";
+    byte[] bytes = s.getBytes();
+    //BigInteger message = new BigInteger(bytes);
+    //BigInteger result = new BigInteger("0");
+
+
+    List<BigInteger> result = new ArrayList<BigInteger>();
+    
+    //list.add(new BigInteger("23456"));
+
+
+    byte[] atmenet = new byte[1];
+    for(int i = 0; i < bytes.length; i++)
+    {
+        atmenet[0] = bytes[i];
+        result.add(key.encrypt(atmenet));
+        //result = key.encrypt(atmenet);
+    }
+
+
+    //BigInteger encrypt = key.encrypt(message);
+    //BigInteger decrypt = key.decrypt(result);
+    System.out.println("message   = " + s);
+    System.out.println("encrypted = " + result);
+    //System.out.println("decrypted = " + key.toString(decrypt));
+   }
+}
+]]>
+        </programlisting>
+    <para>
+      A feladatunk itt visszont még nem ér véget mivel nekünk meg kellet próbálnunk visszafejteni a hibásan kódólt üzenetünket. Ezt pedig ugy próbáltuk megvalósítani hogy feltételeztük hogy az egyforma betük egyforma kulcsal rendelkeznek. így megeszámláltuk, hogy az egyforma kulcsok egymáshoz képest milyen arányba fordulnak elő majd betügyakoriság elve alapján behejetesítetük a betüket. Az így visszakapot szövegen láthatjuk, hogy elégé távol áll a megoldástól ami méginkább megerősíti az RSA titkosítonk hibáját. A dekódolás után csak abban az esetben kaphatunk pontos megoldást ha pontosan sikerül eltalálni a betügyakoriságot. És végül lássuk is a RSA törö megvalósítását:
+    </para>
+            <programlisting language="c++">
+<![CDATA[
+import java.io.*;
+
+class RsaTores {
+    public static void main(String[] args) {
+        try {
+            BufferedReader inputStream = new BufferedReader(new FileReader("be2.txt"));
+            int lines = 0;
+
+            String line[] = new String[10000];
+
+            while((line[lines] = inputStream.readLine()) != null) {
+                lines++;
+            }
+
+            inputStream.close();
+
+            KulcsPar kp[] = new KulcsPar[100];
+
+            boolean volt = false;
+            kp[0] = new KulcsPar(line[0]);
+            int db = 1;
+
+            for(int i = 1; i < lines; i++) {
+                volt = false;
+                for(int j = 0; j < db; j++) {
+                    if(kp[j].getValue().equals(line[i])) {
+                        kp[j].incFreq();
+                        volt = true;
+                        break;
+                    }
+                }
+
+                if(volt == false) {
+                    kp[db] = new KulcsPar(line[i]);
+                    db++;
+                }
+            }
+
+
+            for(int i = 0; i < db; i++) {
+                for(int j = i + 1; j < db; j++) {
+                    if(kp[i].getFreq() < kp[j].getFreq() ) {
+                        KulcsPar temp = kp[i];
+                        kp[i] = kp[j];
+                        kp[j] = temp;
+                    }
+                }
+            }
+
+
+
+
+
+            FileReader f = new FileReader("angol.txt");
+
+            char[] key = new char[60];
+            int kdb=0;
+            int k;
+
+            while((k = f.read()) != -1) {
+                if((char)k != '\n') {
+                    key[kdb] = (char)k;
+                    //System.out.println(key[kdb]);
+                    kdb++;
+                }
+            }
+
+            f.close();
+
+            for(int i = 0; i < kdb && kp[i] != null; i++) {
+                kp[i].setKey(key[i]);
+            }
+
+
+            for(int i = 0; i < lines; i++) {
+                for(int j = 0; j < db; j++) {
+                    if(line[i].equals(kp[j].getValue())) {
+                        System.out.print(kp[j].getKey());
+                    }
+                }
+            }
+
+        } catch(IOException e) {
+        }
+
+    }
+}
+]]>
+        </programlisting>
+    </section>
+
+    <section>
+        <title>Változó argumentumszámú ctor</title>
+        <para>
+            Az volt a feladatunk, hogy készítsünk olyan példát, amely egy képet tesz az alábbi projekt Perceptron osztályának bemenetére és a Perceptron ne egy értéket, hanem egy ugyanakkora méretű képet adjon vissza. Ehhez először is fel kellet élesztenünk az prog1-en használt mandelbrot halmazt kirajzóló programot mivel ez fogja majd legenerálni az általunk használt pngt.
+        </para>
+        <para>
+            Ezzel különösebb dolgunk nem volt a kódot a szokot módon plusz a -lpng kapcsolóval forditjuk majd futtatjuk csak futatáskor meg kel adni a kimeneti png nevét.
+        </para>
+        <programlisting language="c++">
+<![CDATA[
+#include <iostream>
+#include "png++/png.hpp"
+#include <sys/times.h>
+
+#define MERET 600
+#define ITER_HAT 32000
+
+void
+mandel (int kepadat[MERET][MERET]) {
+
+    clock_t delta = clock ();
+
+    struct tms tmsbuf1, tmsbuf2;
+    times (&tmsbuf1);
+
+    float a = -2.0, b = .7, c = -1.35, d = 1.35;
+    int szelesseg = MERET, magassag = MERET, iteraciosHatar = ITER_HAT;
+
+    float dx = (b - a) / szelesseg;
+    float dy = (d - c) / magassag;
+    float reC, imC, reZ, imZ, ujreZ, ujimZ;
+    // Hány iterációt csináltunk?
+    int iteracio = 0;
+    // Végigzongorázzuk a szélesség x magasság rácsot:
+    for (int j = 0; j < magassag; ++j)
+    {
+        for (int k = 0; k < szelesseg; ++k)
+        {
+            reC = a + k * dx;
+            imC = d - j * dy;
+            reZ = 0;
+            imZ = 0;
+            iteracio = 0;
+            while (reZ * reZ + imZ * imZ < 4 && iteracio < iteraciosHatar)
+            {
+                ujreZ = reZ * reZ - imZ * imZ + reC;
+                ujimZ = 2 * reZ * imZ + imC;
+                reZ = ujreZ;
+                imZ = ujimZ;
+
+                ++iteracio;
+
+            }
+
+            kepadat[j][k] = iteracio;
+        }
+    }
+
+    times (&tmsbuf2);
+    std::cout << tmsbuf2.tms_utime - tmsbuf1.tms_utime
+              + tmsbuf2.tms_stime - tmsbuf1.tms_stime << std::endl;
+
+    delta = clock () - delta;
+    std::cout << (float) delta / CLOCKS_PER_SEC << " sec" << std::endl;
+
+}
+
+int
+main (int argc, char *argv[])
+{
+
+    if (argc != 2)
+    {
+        std::cout << "Hasznalat: ./mandelpng fajlnev";
+        return -1;
+    }
+
+    int kepadat[MERET][MERET];
+
+    mandel(kepadat);
+
+    png::image < png::rgb_pixel > kep (MERET, MERET);
+
+    for (int j = 0; j < MERET; ++j)
+    {
+        //sor = j;
+        for (int k = 0; k < MERET; ++k)
+        {
+            kep.set_pixel (k, j,
+                           png::rgb_pixel (255 -
+                                           (255 * kepadat[j][k]) / ITER_HAT,
+                                           255 -
+                                           (255 * kepadat[j][k]) / ITER_HAT,
+                                           255 -
+                                           (255 * kepadat[j][k]) / ITER_HAT));
+        }
+    }
+
+    kep.write (argv[1]);
+    std::cout << argv[1] << " mentve" << std::endl;
+
+}
+]]>
+</programlisting>
+
+    <mediaobject>
+        <imageobject>
+            <imagedata fileref="source/MasodikFejezet/Stroustrup/Perceptron/mandel.png" scale="70" />
+        </imageobject>
+    </mediaobject>
+
+    <para>
+        Most, hogy a képünk megvan át is térhetünk a perceptronra. A kapott képre azért volt szükség mivel futtatáskor ezt a képet fogja megkapni a perceptron, ami a kép piros részeit a lefoglat tárba másolja és ez alapján új képet álít elő úgy hogy a magasság és a szélesség nem változik.
+    </para>
+
+<programlisting language="c++">
+<![CDATA[
+#include <iostream>
+#include "mlp.hpp"
+#include <png++/png.hpp>
+#include <fstream>
+
+int main (int argc, char **argv)
+{
+	png::image <png::rgb_pixel> png_image (argv[1]);
+	int size = png_image.get_width() *png_image.get_height();
+    
+	Perceptron* p = new Perceptron (3, size, 256, size);
+    
+	double* image = new double[size];
+    
+	for (int i {0}; i<png_image.get_width(); ++i)
+		for (int j {0}; j<png_image.get_height(); ++j)
+			image[i*png_image.get_width() +j] = png_image[i][j].red;
+            
+	double* newimage = (*p) (image);
+    
+    for (int i = 0; i<png_image.get_width(); ++i)
+		for (int j = 0; j<png_image.get_height(); ++j)
+			png_image[i][j].blue = newimage[i*png_image.get_width()+j];
+	
+    png_image.write("output.png");
+    
+	delete p;
+	delete [] image;
+}
+]]>
+</programlisting>
+
+<programlisting language="c++">
+<![CDATA[
+class Perceptron
+{
+public:
+  Perceptron ( int nof, ... )
+  {
+    n_layers = nof;
+
+    units = new double*[n_layers];
+    n_units = new int[n_layers];
+
+    va_list vap;
+
+    va_start ( vap, nof );
+
+    for ( int i {0}; i < n_layers; ++i )
+      {
+        n_units[i] = va_arg ( vap, int );
+
+        if ( i )
+          units[i] = new double [n_units[i]];
+      }
+
+    va_end ( vap );
+
+    weights = new double**[n_layers-1];
+
+#ifndef RND_DEBUG
+    std::random_device init;
+    std::default_random_engine gen {init() };
+#else
+    std::default_random_engine gen;
+#endif
+
+    std::uniform_real_distribution<double> dist ( -1.0, 1.0 );
+
+    for ( int i {1}; i < n_layers; ++i )
+      {
+        weights[i-1] = new double *[n_units[i]];
+
+        for ( int j {0}; j < n_units[i]; ++j )
+          {
+            weights[i-1][j] = new double [n_units[i-1]];
+
+            for ( int k {0}; k < n_units[i-1]; ++k )
+              {
+                weights[i-1][j][k] = dist ( gen );
+              }
+          }
+      }
+  }
+]]>
+</programlisting>
+<para>
+    A konstruktorunk, mint láthatjuk változó paraméterszámú ami azért hasznos mert így ugymond több szűrőt tudunk majd használni. Elsőnek a szintek számát kellet meghatároznunk majd az ehez tartozó unitokat és ennek megfelelően meghívtuk a perceptron osztály konstruktorát. Az láthatjuk hogy a () operátor mostmár egy érték helyet egy tömböt fog viszaadmi így ennek segitségével már tudunk a képpel dolgozni majd egy új png ként lementeni azt.
+</para>
+<programlisting language="c++">
+<![CDATA[
+Perceptron ( std::fstream & file )
+  {
+    file >> n_layers;
+
+    units = new double*[n_layers];
+    n_units = new int[n_layers];
+
+    for ( int i {0}; i < n_layers; ++i )
+      {
+        file >> n_units[i];
+
+        if ( i )
+          units[i] = new double [n_units[i]];
+      }
+
+    weights = new double**[n_layers-1];
+
+    for ( int i {1}; i < n_layers; ++i )
+      {
+        weights[i-1] = new double *[n_units[i]];
+
+        for ( int j {0}; j < n_units[i]; ++j )
+          {
+            weights[i-1][j] = new double [n_units[i-1]];
+
+            for ( int k {0}; k < n_units[i-1]; ++k )
+              {
+                file >> weights[i-1][j][k];
+              }
+          }
+      }
+  }
+
+
+  double sigmoid ( double x )
+  {
+    return 1.0/ ( 1.0 + exp ( -x ) );
+  }
+
+
+double* operator() ( double image [] )
+  {
+
+    units[0] = image;
+
+    for ( int i {1}; i < n_layers; ++i )
+      {
+
+#ifdef CUDA_PRCPS
+
+        cuda_layer ( i, n_units, units, weights );
+
+#else
+
+        #pragma omp parallel for
+        for ( int j = 0; j < n_units[i]; ++j )
+          {
+            units[i][j] = 0.0;
+
+            for ( int k = 0; k < n_units[i-1]; ++k )
+              {
+                units[i][j] += weights[i-1][j][k] * units[i-1][k];
+              }
+
+            units[i][j] = sigmoid ( units[i][j] );
+
+          }
+
+#endif
+
+      }
+
+    for (int i = 0; i < n_units[n_layers - 1]; i++)
+        image[i] = units[n_layers - 1][i];
+    
+    return image;
+
+  }
+
+  void learning ( double image [], double q, double prev_q )
+  {
+    double y[1] {q};
+
+    learning ( image, y );
+  }
+
+  void learning ( double image [], double y[] )
+  {
+    //( *this ) ( image );
+
+    units[0] = image;
+
+    double ** backs = new double*[n_layers-1];
+
+    for ( int i {0}; i < n_layers-1; ++i )
+      {
+        backs[i] = new double [n_units[i+1]];
+      }
+
+    int i {n_layers-1};
+
+    for ( int j {0}; j < n_units[i]; ++j )
+      {
+        backs[i-1][j] = sigmoid ( units[i][j] ) * ( 1.0-sigmoid ( units[i][j] ) ) * ( y[j] - units[i][j] );
+
+        for ( int k {0}; k < n_units[i-1]; ++k )
+          {
+            weights[i-1][j][k] += ( 0.2* backs[i-1][j] *units[i-1][k] );
+          }
+
+      }
+
+    for ( int i {n_layers-2}; i >0 ; --i )
+      {
+
+        #pragma omp parallel for
+        for ( int j =0; j < n_units[i]; ++j )
+          {
+
+            double sum = 0.0;
+
+            for ( int l = 0; l < n_units[i+1]; ++l )
+              {
+                sum += 0.19*weights[i][l][j]*backs[i][l];
+              }
+
+            backs[i-1][j] = sigmoid ( units[i][j] ) * ( 1.0-sigmoid ( units[i][j] ) ) * sum;
+
+            for ( int k = 0; k < n_units[i-1]; ++k )
+              {
+                weights[i-1][j][k] += ( 0.19* backs[i-1][j] *units[i-1][k] );
+              }
+          }
+      }
+
+    for ( int i {0}; i < n_layers-1; ++i )
+      {
+        delete [] backs[i];
+      }
+
+    delete [] backs;
+
+  }
+
+  ~Perceptron()
+  {
+    for ( int i {1}; i < n_layers; ++i )
+      {
+        for ( int j {0}; j < n_units[i]; ++j )
+          {
+            delete [] weights[i-1][j];
+          }
+
+        delete [] weights[i-1];
+      }
+
+    delete [] weights;
+
+    for ( int i {0}; i < n_layers; ++i )
+      {
+        if ( i )
+          delete [] units[i];
+      }
+
+    delete [] units;
+    delete [] n_units;
+
+  }
+
+  void save ( std::fstream & out )
+  {
+    out << " "
+        << n_layers;
+
+    for ( int i {0}; i < n_layers; ++i )
+      out << " " << n_units[i];
+
+    for ( int i {1}; i < n_layers; ++i )
+      {
+        for ( int j {0}; j < n_units[i]; ++j )
+          {
+            for ( int k {0}; k < n_units[i-1]; ++k )
+              {
+                out << " "
+                    << weights[i-1][j][k];
+
+              }
+          }
+      }
+
+  }
+
+private:
+  Perceptron ( const Perceptron & );
+  Perceptron & operator= ( const Perceptron & );
+
+  int n_layers;
+  int* n_units;
+  double **units;
+  double ***weights;
+
+};
+]]>
+</programlisting>
+<para>
+Innen egy double pointert kapunk vissza ami az eredményünket fogja visszaadni amit lejebb meg is tekinthetünk. 
+</para>
+
+<mediaobject>
+        <imageobject>
+            <imagedata fileref="source/MasodikFejezet/Stroustrup/Perceptron/output.png" scale="70" />
+        </imageobject>
+</mediaobject>
+
+    </section>
+    
+</chapter>
+
+
+

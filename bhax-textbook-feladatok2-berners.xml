@@ -1,0 +1,146 @@
+<chapter xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0" xml:lang="hu">
+    <info>
+        <title>Helló, Berners-Lee!</title>
+        <keywordset>
+            <keyword/>
+        </keywordset>
+    </info>
+
+    <section>
+        <title>Python élménybeszámoló</title>
+        <para>
+            A Forstner Bertalan, Ekler Péter, Kelényi Imre: Bevezetés a mobilprogramozásba című könyv A python nyelv bemutatása című fejezete bevezet minket a python nyelv világába, elmondja a legfőbb tulajdonságait, szót ejt a python programozási nyelv szinataxisáról illetve alapszinten bemutatja a legfontosabb parancsokat azoknak a használatát.
+        </para>
+        <para>
+            Mielöt belemélyednénk a python programozásban elöszr ésszerü a szintaxisával megismeredni. A pythonak viszonylag egyszerű, könnyen átlátható, rendezet szintaxissal rendelkezik. Legfőbb tulajdonsága, hogy behuzás alapú, a programban szereplő álitásokat azonos behúzással tudjuk csoportositani. Ugyanakkor fontos jelemzője még a nyelvnek, hogy minden utasítás a sor végéig tart igy nem kell mindig kiírni a jól megszokott ;-ket. A python kód minden egyes sorát úgynevezet tokenekre bonthatunk, amelyk közt üres karakterek lehetnek. A tokenek lehetnek: azonosító, kulcsszó, operátor, delimiter, literál. A pythonban a # karaktert használjuk egy sor kommentelésére.
+        </para>
+        <para>
+            Pythonban minden adatot objektumok reprezentálnak. Azt, hogy egy adaton milyen műveletek végezhetöek el az objektum típusa határozza meg. Fontos megemlíteni, hogy pythonban nem szükséges a változó megadásakor típust hozzárendelni, mivel futatási időben ezt a rendszer atomatikusan kitalálja és hozzárendeli. Egy változó lehet szám, azon belül is lehetnek egészek, lebegöpontosak vagy complex számok, logikai változó, szöveg. Fontos még megemlíteni a tuplest, a listát illetve a szótárat. A tuples objektumok gyüjteménye amiben az objektumok típusa lehet eltérő is. A lista különböző típusú elemek rendezet szekvenciája. Ennek jelemzöje, hogy dinamikus és az elemeit indexeikkel azonosítjuk. A szótár pedig kulcsokal azonosítot elemek halmaza.
+        </para>
+        <para>
+            A fejezet következö részében olvashatunk néhány fontosabbat a listákra vonatkozó parancsok közül mint például count, append, extend, insert, remove, pop, len, del, reverse és a sort. A count(a) visszaadja a-nak előfordulásainak számát. Az append(a) hozzáfűzi a-t a lista végéhez.Az extend(l)-el l-t hozzafűzhetjuk a lista végéhez. Az insert hasonló az appendhez csak az adott elemet akárhova hozzáadhatjuk a listához. Del-el törölni lehet, len-el pedig a lista elemszámát kapjuk meg. A sort rendezi a listát alapértelmezetten növekvő sorrendbe.
+        </para>
+        <para>
+            Miután a típusokkal és a hozájuk tartozó fontosabb utasjtásokkal végrztünk rátérhetünk a nyelv eszközeire is. Elsönek megemlítjük a print utasítást ami változók vagystringek kiiratására használhatunk. Majd rátérünk a már más programozási nyelvekből jól ismert elágazásokra és a for illetvé while ciklusra
+        </para>
+        <programlisting language="python">
+            <![CDATA[
+            # elgazás 
+            if szam :
+                print("Kisebb mint 0")
+            elif szam > 0 : 
+                print("Nagyobb mint 0")
+            else :
+                print("Pontosan 0")
+            
+            # for ciklus
+            for i in range(0,11):
+                print("kutya")
+
+            # while ciklus
+            i=0
+            while(i<3):
+                print(i)
+                i=i+1
+
+            ]]>
+        </programlisting>
+        <para>
+            Következönek a függvényekkel foglalkozunk. Pythonban fügvényt a def szóval definiálunk. A függvényekre értékekként is gondolhatunk mivel azok továbbadhatoak más függvényeknek, illetve objektumkonstruktoroknak is. A függvények rendelkeznek paraméterekkel amelyek érték szerint adódnak át, illetve beszélhetünk ugynevezett mutable típuokról pl. listák szótárak. A függvény hívásánál megtudjuk adni a szokot módon úgy, hogy a paramétereket a függvény definícióban meghatározott sorrendben kérjük be. Emellet lehetöségünk van arra hogy konkrét argumentumoknak híváskor adjunk értéket. A függvények általába egy viszatérési értékkel rendelkeznek de visszatérhetnek tuplesel is.
+        </para>
+        <programlisting language="python">
+            <![CDATA[
+            # Egy egyszerű függvény egy szám négyzetére
+            def Negyzet(szam):
+                negyzet=0
+                negyzet=szam*szam
+                return szam
+            ]]>
+        </programlisting>
+        <para>
+            A pythonos fejezet végén elérünk a osztályokhoz és objektumokhoz. A python támogatja a klasszikus objektumorientált eljárásokat, definiálhatunk osztályokat, amelynek példányai az objektumok. Az osztályoknak vannak attributúmaik objektumok, illetve függvények. Emellet egy osztály örökölhet más osztálytól is.
+            <programlisting language="python">
+            <![CDATA[
+            # Osztály definiálasa
+            class osztalynev(ososztalyok):
+                osztalytorzs
+            ]]>
+            </programlisting>
+            Az ososztaly más osztályok opcinális listái vesszővel elválasztva. Az osztályoknak lehet egy speciális, konstruktor tulajdonságú metodusa is az 
+            _ _init_ _.Ennek első paramétere a self, vagyis a létrehozandó objektum maga. Ezen kivül további paraméterek is várhatóak.
+            <programlisting language="python">
+            <![CDATA[
+            # konstruktorra példa
+            class teglalap(object):
+                def _ _ init _ _(self, szelesseg, magassag):
+                self.szelesseg = szelesseg
+                self.magassag = magassag
+            ]]>
+            </programlisting>
+            Bár a python osztályai még rengeteg szolgáltatást nyújt a könyv nem tér ki rájuk mivel csak egy alapszintű betekintést kíván nyújtani a Python programozási nyelv világába.
+        </para>
+        <para>
+            Összeségében a könyv ezen fejezeta a Pythonról jól összeszedet, logikusan felépitve mutatja be a Python nyelv alapjait és szépségeit.
+        </para>
+    </section>                                                                
+    
+    
+    
+    
+     <section>
+        <title>C++ és Java összehasonlítása</title>
+        <para>
+            Mint ahogyan a címből is kiderülhetett a Java és a c++ nyelveket fogjuk összehasonlítani a Benedek Zoltán, Levendovszky Tihamér Szoftverfejlesztés C++ nyelven és a Nyékyné Dr. Gaizler Judit et al. Java 2 útikalauz programozóknak 5.0 I-II. könyvek alapján.
+        </para>
+        <para>
+            Alapvetőleg a C++ és Java programozási nyelvek egyaránt oblyektumorientáltak, a programok osztályokbol és az ezekből létrehozott objektumokból áll. A két nyelv között talán a legnagyobb különbség az, hogy a C++-al ellentéteben, ami egy natív nyelv, addig a Java kódot forditva egy Javabyte kódott kapunk amit majd a Java viruális gép fog értelmezni. Ennek köszönhetöen a Java, a C++-al ellentétben, ténylegesen egy cross platform nyelv.
+        </para>
+        <para>
+            Mint már feljebb is említetem a Java és a C programozási nyelvek nagyon hasonlóak és ez a szintaxisukban is meglátszik.
+            Itt egy egyszerű példa erre a hasonlóságra:
+            <programlisting language="c++">
+                <![CDATA[
+                //C++
+                class MyClass
+                {
+                    public:
+                    static doStuff();
+                };
+                MyClass::doStuff();
+                ]]>
+            </programlisting>
+            <programlisting language="java">
+                <![CDATA[
+                //Java
+                class MyClass
+                {
+                    public static doStuff()
+                    {}
+                }
+                MyClass.doStuff();
+                ]]>
+            </programlisting>    
+        </para>
+        <para>
+            A Java nyelvnek egyik nagy elönye a C++-al szemben (többekközt ezért alkalmaza egyre több cég manapság), hogy a Java rengeteg funkcíót tartalmaz mint példáúl hálózati és 3D megjelenítésre egyaránt ad eszközöket.
+        </para>
+        <para>
+            Már a szintaxisoknál felhozott példámból látható volt, hogy a Java osztály koncepciója egyezik a C++-éval visszont ennek ellenére működési külömbségek fellelhetöek. Egyik ilyen különbség, hogy javában nem áll módunkba osztályon kivül definiálni egyes ostálymetódusokat.
+            A java esetében nem tudjuk meghatározni, hogy mikor fog a memoria felszabadulni mivel a dekonstruktort írni. Ezzel elentétben a C++-ban mi felelünk a memóriáért és ebbe beleértendő annak felszabadítása is.
+        </para>
+        <para>
+            A javában lehetöségünk van arra, hogy programunk egyes részeit csomagokba szervezzük amivel lehetöségünk nyílik a statikus csomagimportálásra java5-től. Ez lehetöséget ad arra, hogy egy statikus változónak nem kell megnevezni az osztályát.
+        </para>
+        <para>
+            Ebben a hasábban ejtsünk pár szót a stringekről mivel ezek a javában viszonylag jól müködnek. A sztringre mint típusra sok megszorítás vonatkozik, hogy szálbiztosá tegye annak használatát.
+            Amikor két sztring megegyezik azok hashCode-ja is megegyezik.Ezeket a hashcode metódussal le tudjuk kérdezni. Minden objetumokból sztringet készithetünk pl a toString metódussal.
+            Javában lehetöségünk van az alap sztringműveletek mellet például mintailesztésre is a matches függvénnyel.
+        </para>
+        <para>
+            A komplexebb matematikai műveletekhez a javában a StrictMath és a Math osztályokra van szükség ami a C++-ban a cmath könyvtárnak felel meg.
+        </para>
+        <para>
+            Míg a C++-ban lehetőségünk van virtuális függvények létrehozására javában csak ezeket használatjuk mivel csak virtuális fügvényeket írhatunk. Ebből az következik, hogy egy osztály felülírhatja a szülö összes metodusát. Javában metódust, a C++-al elentétben, csak az osztályon belül lehet megadni.
+        </para>
+    </section>               
+</chapter>                

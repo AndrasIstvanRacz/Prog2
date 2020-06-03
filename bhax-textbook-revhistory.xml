@@ -1,0 +1,119 @@
+<revhistory xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0" xml:lang="hu">
+    <revision>
+        <revnumber>0.0.1</revnumber>
+        <date>2019-02-12</date>
+        <authorinitials>nbatfai</authorinitials>
+        <revremark>
+            Az iniciális dokumentum szerkezetének kialakítása.
+        </revremark>
+    </revision>
+    <revision>
+        <revnumber>0.0.2</revnumber>
+        <date>2019-02-14</date>
+        <authorinitials>nbatfai</authorinitials>
+        <revremark>
+            Inciális feladatlisták összeállítása.
+        </revremark>
+    </revision>    
+    <revision>
+        <revnumber>0.0.3</revnumber>
+        <date>2019-02-16</date>
+        <authorinitials>nbatfai</authorinitials>
+        <revremark>
+            Feladatlisták folytatása.
+            Feltöltés a BHAX csatorna 
+            <link xlink:href="https://gitlab.com/nbatfai/bhax">https://gitlab.com/nbatfai/bhax</link>
+            repójába.
+        </revremark>
+    </revision>
+
+    <revision>
+        <revnumber>0.0.4</revnumber>
+        <date>2019-03-04</date>
+        <authorinitials>randras</authorinitials>
+        <revremark>
+            Második fejezet befejezése
+        </revremark>
+    </revision>
+
+    <revision>
+        <revnumber>0.0.5</revnumber>
+        <date>2019-03-11</date>
+        <authorinitials>randras</authorinitials>
+        <revremark>
+            Harmadik feladatsor befejezése.
+        </revremark>
+    </revision>
+
+    <revision>
+        <revnumber>0.0.6</revnumber>
+        <date>2019-03-18</date>
+        <authorinitials>randras</authorinitials>
+        <revremark>
+            Negyedik feladatsort megoldva.
+        </revremark>
+    </revision>
+
+    <revision>
+        <revnumber>0.0.7</revnumber>
+        <date>2019-03-25</date>
+        <authorinitials>randras</authorinitials>
+        <revremark>
+            Ötödik fejezet befejezve.
+        </revremark>
+    </revision>
+
+    <revision>
+        <revnumber>0.0.8</revnumber>
+        <date>2019-04-01</date>
+        <authorinitials>randras</authorinitials>
+        <revremark>
+            Hatodik fejezet megoldva.
+        </revremark>
+    </revision>
+
+     <revision>
+        <revnumber>0.0.9</revnumber>
+        <date>2019-04-08</date>
+        <authorinitials>randras</authorinitials>
+        <revremark>
+            Hetedik feladatsor megoldva.
+        </revremark>
+    </revision>
+
+     <revision>
+        <revnumber>0.1.0</revnumber>
+        <date>2019-04-22</date>
+        <authorinitials>randras</authorinitials>
+        <revremark>
+            Nyolcadik fejezet befejezve.
+        </revremark>
+    </revision>
+
+     <revision>
+        <revnumber>0.1.1</revnumber>
+        <date>2019-04-29</date>
+        <authorinitials>randras</authorinitials>
+        <revremark>
+            Kilencedik feladatsor megoldva.
+        </revremark>
+    </revision>
+       <revision>
+        <revnumber>0.1.2</revnumber>
+        <date>2019-05-06</date>
+        <authorinitials>randras</authorinitials>
+        <revremark>
+            Olvasónaplo befejezése.
+        </revremark>
+    </revision>
+      <revision>
+        <revnumber>1.0.0</revnumber>
+        <date>2019-04-09</date>
+        <authorinitials>randras</authorinitials>
+        <revremark>
+            Könyv befejezése.
+        </revremark>
+    </revision>
+    
+</revhistory>
+

@@ -1,0 +1,408 @@
+<chapter xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0" xml:lang="hu">
+    <info>
+        <title>Helló, Chomsky!</title>
+        <keywordset>
+            <keyword/>
+        </keywordset>
+    </info>
+    <section>
+        <title>Decimálisból unárisba átváltó Turing gép</title>
+        <para>
+            Az unáris számrendszer a legegyszerübb számrendszer.Csak természetes számokat lehet velük ábrázolni.Ha például az 5 számot akarjuk unárisban ábrázólni akkor elöször is be kell vezetnünk egy szimbólumont amivel az 1 számot foja jelenteni.Nekünk most ez a | karakter lesz.Szóval az 5 unáris számrendszerbe így fog kinézni: |||||.A mi feladatunk az, hogy irjunk egy olyan turing gépet ami egy decimális számot unárisá alakit.Ennek a programnak az álapotmenet gráfja lejjebb látható.
+        </para>
+        <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/D-U_turing.png" scale="70" />
+                </imageobject>
+        </mediaobject>
+    </section>        
+        
+    <section>
+        <title>Az a<superscript>n</superscript>b<superscript>n</superscript>c<superscript>n</superscript> nyelv nem környezetfüggetlen</title>
+        <para>
+            Ebben a feladatban két környezetfüggő generatív grammatikát
+            kellett bemutatnunk ami az a<superscript>n</superscript>b<superscript>n</superscript>c<superscript>n</superscript>
+            nyelvet generálja.A generatív nyelvtan elméletét Noam Chomsky amerikai nyelvész alkota meg.Chomsky a generativ nyelveket négy csoportra osztota, amiből mi a környezetfüggő nyelvtanokkal fogunk foglalkozni.A környezetfüggetlen nyelvtanokkal ellentétben itt a képzési szabályok mindkét oldalán allhatnak terminális szimbólumok.
+            A szabályokat a -> jellel lehet megadni de ez a lentebbi megoldásunkból is látható.
+
+
+        </para>
+                   <programlisting><![CDATA[
+S, X, Y "változók"
+a, b, c "konstansok"
+S -> abc, S -> aXbc, Xb -> bX, Xc -> Ybcc, bY -> Yb, aY -> aaX, aY -> aa
+S-ből indulunk ki
+-----------------
+S (S -> aXbc)
+aXbc (Xb -> bX)
+abXc (Xc -> Ybcc)
+abYbcc (bY -> Yb)
+aYbbcc (aY - aa)
+aabbcc
+-----------------
+S (S -> aXbc)
+aXbc (Xb -> bX)
+abXc (Xc -> Ybcc)
+abYbcc (bY -> Yb)
+aYbbcc (aY -> aaX)
+aaXbbcc (Xb -> bX)
+aabXbcc (Xb -> bX)
+aabbXcc (Xc -> Ybcc)
+aabbYbccc (bY -> Yb)
+aabYbbccc (bY -> Yb)
+aaYbbbccc (aY -> aa)
+aaabbbccc]]>
+            </programlisting>
+            <programlisting><![CDATA[
+A, B, C "változók"
+a, b, c "konstansok"
+A -> aAB, A -> aC, CB -> bCc, cB -> Bc, C -> bc
+S-ből indulunk ki
+-----------------
+A (A -> aAB)
+aAB (A -> aC)
+aaCB (CB -> bCc)
+aabCc (C -> bc)
+aabbcc
+-----------------
+A (A -> aAB)
+aAB (A -> aAB)
+aaABB (A -> aAB)
+aaaABBB (A -> aC)
+aaaaCBBB (CB -> bCc)
+aaaabCcBB (cB -> Bc)
+aaaabCBcB (cB -> Bc)
+aaaabCBBc (CB -> bCc)
+aaaabbCcBc (cB -> Bc)
+aaaabbCBcc (CB -> bCc)
+aaaabbbCccc (C -> bc)
+aaaabbbbcccc]]>
+            </programlisting>
+
+    </section>        
+                
+    <section>
+        <title>Hivatkozási nyelv</title>
+        <para>
+            A C egy általános célú programozási nyelv és mint minden nyelv a C is változik, bővűl bizonyos dolgokkal.Így ennek következtében előfordulhat az, hogy egy régebbi szabványal nem fog lefordulni a programunk.Erre példa az alábbi for ciklus amit ha c89 szabvánnyal probálunk leforditani (ezt a -std=c89 kapcsolóval tudjuk megtenni) akkor egy hibaüzeneten belül a forditó közli velünk, hogy mely szabványokkal tudjuk leforditani a programunkat.
+        </para>
+         <programlisting language="c"><![CDATA[
+//gcc fordule.c -o teszt -std=c89 -el nem fordul le
+//gcc fordule.c -o teszt le fog fordulni
+int main()
+{
+    for(int i; i>0; ++i)
+    {}
+}
+]]></programlisting>
+    </section>                     
+
+    <section>
+        <title>Saját lexikális elemző</title>
+        <para>
+            A feladat az volt, hogy írjunk egy olyan lexikális ellemzőt ami felismeri a bemeneten megjelenő valós számokat és megszámolja azokat majd kiírja, hogy pontosan hány darab számot tartalmazot a szöveg.A feladat érdekesége az volt, hogy a lexer lexikális elemzőjét használjuk.Ezzel is szokva, hogy munkánk során gyakran fogjuk más programjait használni, azaz "óriások válán állni".A kód maga azt csinálja, hogy bekér egy szöveget, majd ha ütünk egy entert akkor láthatjuk, hogy a szövegben lévő számokat kiírja először stringként majd float formátumban.Amikor ki akarunk lépni a programból, ez ctrl+D lenyomásaval tehetjük meg, akkor ki fogja írni, hogy a szövegben pontosan hány valós számot találtunk. 
+        </para>
+<programlisting language="c"><![CDATA[%{/*
+Forditas:
+$ lex -o realnumber.c realnumber.l 
+
+Futtatas:
+$ gcc realnumber.c -o realnumber -lfl
+(kilépés az input vége, azaz Ctrl+D)
+*/
+#include <stdio.h>
+int realnumbers = 0;
+%}
+digit   [0-9]
+%%
+{digit}*(\.{digit}+)?   {++realnumbers; 
+    printf("[realnum=%s %f]", yytext, atof(yytext));}
+%%
+int
+main ()
+{
+ yylex ();
+ printf("The number of real numbers is %d\n", realnumbers);
+ return 0;
+}
+]]></programlisting>
+    </section>                     
+
+    <section>
+        <title>l33t.l</title>
+        <para>
+            A leet egy olyan írásmód amely szavakban egyes betüket átír más karakterekre (pl.haxor - h4x0r).Amellet, hogy az így leírt szavak sokkal rajosabbak, még hasznuk is van mivel általába az online világban egyre gyakraban megjelenő AI szűrők nincsenek felkészitve az e módon leírt szavakra.A program hossza ellenére egyáltalán nem bonyolult.Elsőnek szokásosan includeoljuk az includeolnivalokat majd definiáljuk a L337SIZE-ot.Ezután bevezetünk egy c változót egy leet nevü négy elemű tömböt és megadjuk l337d1c7 tömböt amely megadja hogy mely karaktereket mire cserélhetunk ki.A program végső része pedig egy for ciklus ami végig megy a kapott szón és if-ek segítségével eldönti, hogy mit mire cseréljen.
+        </para>
+        <programlisting language="c"><![CDATA[/*
+Forditas:
+$ lex -o l337d1c7.c l337d1c7.l 
+
+Futtatas:
+$ gcc l337d1c7.c -o l337d1c7 -lfl
+(kilépés az input vége, azaz Ctrl+D)
+*/
+%{
+  #include <stdio.h>
+  #include <stdlib.h>
+  #include <time.h>
+  #include <ctype.h>
+
+  #define L337SIZE (sizeof l337d1c7 / sizeof (struct cipher))
+    
+  struct cipher {
+    char c;
+    char *leet[4];
+  } l337d1c7 [] = {
+
+  {'a', {"4", "4", "@", "/-\\"}},
+  {'b', {"b", "8", "|3", "|}"}},
+  {'c', {"c", "(", "<", "{"}},
+  {'d', {"d", "|)", "|]", "|}"}},
+  {'e', {"3", "3", "3", "3"}},
+  {'f', {"f", "|=", "ph", "|#"}},
+  {'g', {"g", "6", "[", "[+"}},
+  {'h', {"h", "4", "|-|", "[-]"}},
+  {'i', {"1", "1", "|", "!"}},
+  {'j', {"j", "7", "_|", "_/"}},
+  {'k', {"k", "|<", "1<", "|{"}},
+  {'l', {"l", "1", "|", "|_"}},
+  {'m', {"m", "44", "(V)", "|\\/|"}},
+  {'n', {"n", "|\\|", "/\\/", "/V"}},
+  {'o', {"0", "0", "()", "[]"}},
+  {'p', {"p", "/o", "|D", "|o"}},
+  {'q', {"q", "9", "O_", "(,)"}},
+  {'r', {"r", "12", "12", "|2"}},
+  {'s', {"s", "5", "$", "$"}},
+  {'t', {"t", "7", "7", "'|'"}},
+  {'u', {"u", "|_|", "(_)", "[_]"}},
+  {'v', {"v", "\\/", "\\/", "\\/"}},
+  {'w', {"w", "VV", "\\/\\/", "(/\\)"}},
+  {'x', {"x", "%", ")(", ")("}},
+  {'y', {"y", "", "", ""}},
+  {'z', {"z", "2", "7_", ">_"}},
+  
+  {'0', {"D", "0", "D", "0"}},
+  {'1', {"I", "I", "L", "L"}},
+  {'2', {"Z", "Z", "Z", "e"}},
+  {'3', {"E", "E", "E", "E"}},
+  {'4', {"h", "h", "A", "A"}},
+  {'5', {"S", "S", "S", "S"}},
+  {'6', {"b", "b", "G", "G"}},
+  {'7', {"T", "T", "j", "j"}},
+  {'8', {"X", "X", "X", "X"}},
+  {'9', {"g", "g", "j", "j"}}
+  
+// https://simple.wikipedia.org/wiki/Leet
+  };
+  
+%}
+%%
+.   {
+      
+      int found = 0;
+      for(int i=0; i<L337SIZE; ++i)
+      {
+      
+        if(l337d1c7[i].c == tolower(*yytext))
+        {
+        
+          int r = 1+(int) (100.0*rand()/(RAND_MAX+1.0));
+        
+          if(r<91)
+            printf("%s", l337d1c7[i].leet[0]);
+          else if(r<95)
+            printf("%s", l337d1c7[i].leet[1]);
+          else if(r<98)
+            printf("%s", l337d1c7[i].leet[2]);
+          else 
+            printf("%s", l337d1c7[i].leet[3]);
+
+          found = 1;
+          break;
+        }
+        
+      }
+      
+      if(!found)
+         printf("%c", *yytext);   
+      
+    }
+%%
+int 
+main()
+{
+  srand(time(NULL)+getpid());
+  yylex();
+  return 0;
+}
+]]></programlisting>
+    </section>                     
+
+
+    <section>
+        <title>A források olvasása</title>
+        <para>
+            Hogyan olvasod, hogyan értelmezed természetes nyelven az alábbi kódcsipeteket? Például
+            <programlisting><![CDATA[if(signal(SIGINT, jelkezelo)==SIG_IGN)
+    signal(SIGINT, SIG_IGN);]]></programlisting>
+            Ha a SIGINT jel kezelése figyelmen kívül volt hagyva, akkor ezen túl is legyen
+            figyelmen kívül hagyva, ha nem volt figyelmen kívül hagyva, akkor a jelkezelo függvény
+            kezelje. (Miután a <command>man 7 signal</command> lapon megismertem a SIGINT jelet, a
+            <command>man 2 signal</command> lapon pedig a használt rendszerhívást.)
+        </para>
+
+        <caution>
+            <title>Bugok</title>
+            <para>
+                Vigyázz, sok csipet kerülendő, mert bugokat visz a kódba! Melyek ezek és miért? 
+                Ha nem megy ránézésre, elkapja valamelyiket esetleg a splint vagy a frama?
+            </para>
+        </caution>
+            
+        <orderedlist numeration="lowerroman">
+            <listitem>                                    
+                <programlisting><![CDATA[if(signal(SIGINT, SIG_IGN)!=SIG_IGN)
+    signal(SIGINT, jelkezelo);]]></programlisting>
+            <para>
+                A legelső kóddal ellentétben a SIGINT jel kezelése nem let figyelmen kivül hagyva.Ezt leszámitva a két kód megegyezik de ez az apró külömbség is elegendő ahhoz, hogy a két kód egymás ellentetjei legyenek.
+            </para>   
+            </listitem>
+            <listitem>                                    
+                <programlisting><![CDATA[for(i=0; i<5; ++i)]]></programlisting>
+            <para>
+                Ez egy for ciklus ami nullától indul és egyesével léptetve 5-ig tart.A ++i miat az i az elött fog eggyel nőni, hogy bármilyen müvelet végrehajtódna.
+            </para>             
+            </listitem>
+            <listitem>                                    
+                <programlisting><![CDATA[for(i=0; i<5; i++)]]></programlisting><para>
+                Ez egy for ciklus ami nullától indul és egyesével léptetve 5-ig tart.A i++ miat az i az után fog eggyel nőni, hogy bármilyen művelet végrehajtódna.
+            </para>            
+            </listitem>
+            <listitem>                                    
+
+                <programlisting><![CDATA[for(i=0; i<5; tomb[i] = i++)]]></programlisting> 
+                <para>
+                Itt szintén egy for ciklust láthatunk ami egy tömbben akarjuk 0-tól 4-ig tárolni a számokat.De ez a megvalósitás ilyen formán kerülendő mivel a tomb[i] = i++ első alkalommal nem kerül végrehajtásra a tömb 0 indexű eleme valamilyen memória szemét lesz.
+                </para>            
+            </listitem>
+            <listitem>                                    
+
+                <programlisting><![CDATA[for(i=0; i<n && (*d++ = *s++); ++i)]]></programlisting> 
+                <para>
+                Ez egy feltételes for ciklus ahol i kisebb mint n és *d++ megegyezik *s++ -al.Visszont ez a feltétel rosszul van megírva mivel a (*d++=*s++) nem egy logikai értéket fog visszaadni így az and logikai művelet nem lesz értelmezhrtő.
+                </para>            
+            </listitem>
+            <listitem>                                    
+
+                <programlisting><![CDATA[printf("%d %d", f(a, ++a), f(++a, a));]]></programlisting>       
+                <para>
+                A printf az f() függvény értékét adja vissza amelynek paraméterei sorrendje nincs megadva.
+                </para>     
+            </listitem>
+            <listitem>                                    
+
+                <programlisting><![CDATA[printf("%d %d", f(a), a);]]></programlisting>
+                <para>
+                Két számot iratunk ki az egyik f() által visszadot érték és az a értéke.
+                </para>           
+            </listitem>
+            <listitem>                                    
+
+                <programlisting><![CDATA[printf("%d %d", f(&a), a);]]></programlisting>   
+                <para>
+                A printf, két számot, az a változót és f() függvény által, a memoriacímből meghatározott értéket írja ki.
+                </para>          
+            </listitem>
+        </orderedlist>
+
+    </section>                     
+
+    <section>
+        <title>Logikus</title>
+        <para>
+            Hogyan olvasod természetes nyelven az alábbi Ar nyelvű formulákat?
+        </para>
+        <para>
+            \text = szöveg kiíratása
+        </para>
+        <para>
+            \forall = univerzális kvantor
+        </para>
+        <para>
+            \exists = egzisztenciális kvantor
+        </para>
+        <para>
+            \supset = implikáció
+        </para>
+        <para>
+            \wedge = konjunkció
+        </para>
+        <para>
+            \neg = negáció
+        </para>
+        <para>
+            \vee = diszjunkció
+        </para>
+        <programlisting language="tex"><![CDATA[
+$(\forall x \exists y ((x<y)\wedge(y \text{ prím})))$
+
+    Végtelen sok prímszám létezik
+
+$(\forall x \exists y ((x<y)\wedge(y \text{ prím})\wedge(SSy \text{ prím})))$ 
+
+    Végtelen sok ikerprím létezik
+
+$(\exists y \forall x (x \text{ prím}) \supset (x<y)) $ 
+
+    Véges sok prímszám létezik
+
+$(\exists y \forall x (y<x) \supset \neg (x \text{ prím}))$
+
+    Véges sok prímszám létezik
+        ]]>
+        </programlisting>        
+    </section>                                                                                                                                                                            
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+    <section>
+        <title>Deklaráció</title>
+            
+        <para>
+            Vezesd be egy programba (forduljon le) a következőket: 
+        </para>
+
+        <itemizedlist>
+            <listitem>
+                <programlisting><![CDATA[int a;        // integer típusú változó bevezetése ]]></programlisting>            
+            </listitem>
+            <listitem>
+                <programlisting><![CDATA[int *b = &a;       // egy pointer ami a memoriacímére mutatt  ]]></programlisting>            
+            </listitem>
+            <listitem>
+                <programlisting><![CDATA[int &r = a;        //referencia változó ami megkapja az a értékét]]></programlisting>            
+            </listitem>
+            <listitem>
+                <programlisting><![CDATA[int c[5];      // 5 elemű tömb ami integer értékeket tárol]]></programlisting>            
+            </listitem>
+            <listitem>
+                <programlisting><![CDATA[int (&tr)[5] = c;      // egészek töbjének referenciája]]></programlisting>            
+            </listitem>
+            <listitem>
+                <programlisting><![CDATA[int *d[5];         //egészre mutató mutatók tömbje]]></programlisting>            
+            </listitem>
+            <listitem>
+                <programlisting><![CDATA[int *h ();         // egészre mutató mutatót visszaadó függvény ]]></programlisting>            
+            </listitem>
+            <listitem>
+                <programlisting><![CDATA[int *(*l) ();      //egészre mutató mutatót visszaadó függvényre mutató mutató]]></programlisting>            
+            </listitem>
+            <listitem>
+                <programlisting><![CDATA[int (*v (int c)) (int a, int b)        // egészet visszaadó és két egészet kapó függvényre mutató mutatót visszaadó, egészet kapó függvény]]></programlisting>            
+            </listitem>            
+            <listitem>
+                <programlisting><![CDATA[int (*(*z) (int)) (int, int);      //függvénymutató egy egészet visszaadó és két egészet kapó függvényre mutató mutatót visszaadó, egészet kapó függvényre]]></programlisting>            
+            </listitem>            
+        </itemizedlist>       
+    </section>                     
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+</chapter>                

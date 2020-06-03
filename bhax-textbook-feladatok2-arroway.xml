@@ -1,0 +1,334 @@
+<chapter xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0" xml:lang="hu">
+    <info>
+        <title>Helló, Arroway!</title>
+        <keywordset>
+            <keyword/>
+        </keywordset>
+    </info>
+
+    <section>
+        <title>OO szemlélet</title>
+        <para>
+            A módosított polártranszformációs normális generátor beprogramozása Java nyelven. Mutassunk rá, hogy a mi természetes saját megoldásunk (az algoritmus egyszerre két
+            normálist állít elő, kell egy példánytag, amely a nem visszaadottat tárolja és egy logikai tag, hogy van-e tárolt vagy futtatni kell az algot.) és az OpenJDK, Oracle JDK-ban a Sun által adott OO szervezés ua.!
+            https://arato.inf.unideb.hu/batfai.norbert/UDPROG/deprecated/Prog1_5.pdf (16-22 fólia)
+            Ugyanezt írjuk meg C++ nyelven is! (lásd még UDPROG repó: source/labor/polargen)
+        </para>
+        <para>
+        A módosított polártranszformációs normális generátorral képesek vagyunk pseudorandom számk generálására. Pseudorandom számok olyan számok amelyek valamilyen algoritmus alapján lettek véletlenszerüen generálva, más szóval egy adott szám újra létrehozhato úgyan azon algoritmus használatával. Az általunk használt algoritmus egyszerre két véletlen számot fog majd generálni a jobb optimalizálás érdekébe.
+        </para>
+        <para>
+            <command>Java implementácó</command>
+        </para>
+        <para>
+            A java kódot két főbb részre oszthatjuk. Az első maga a plártranszformációs algoritmusunk és egy main függvényre ami az algoritmus tesztelésére hozzunk léter.
+        
+            <programlisting language="java">
+            <![CDATA[
+                public class polargen {
+
+                    boolean nincsTarolt = true;
+                    double tarolt;
+
+                    public polargen() {
+                        nincsTarolt = true;
+                    }
+
+                    public double kovetkezo(){
+                        if(nincsTarolt){
+                            double u1, u2, v1, v2, w;
+                            do{
+                                u1 = Math.random();
+                                u2 = Math.random();
+                                v1 = 2 * u1 - 1;
+                                v2 = 2 * u2 - 1;
+                                w = v1 * v1 + v2 * v2;
+                            } while(w > 1);
+                            double r = Math.sqrt((-2 * Math.log(w)) / w);
+                            tarolt = r * v2;
+                            nincsTarolt = !nincsTarolt;
+                            return r * v1;
+                        }
+                        else {
+                            nincsTarolt = !nincsTarolt;
+                            return tarolt;
+                        }
+                    }
+            ]]>
+            </programlisting>
+            A polargen osztályban az első amit láthatunk az a nincsTarolt boolean és a tarolt double típusú változók ami a hatékonyabb tárolást fogja segíteni.A nincsTarolt fogja megadni, hogy van-e már számunk és a tarolt fogja tartalmazni az értéket. A következő metódus hozza létre a random számokat a Math osztály segitségével.
+
+
+            <programlisting language="java">
+            <![CDATA[
+            public static void main(String[] args){
+                polargen g = new polargen();
+                    for (int i = 0; i < 10; ++i){
+                        System.out.println(g.kovetkezo());
+                    }
+                }
+            }
+            ]]>
+            </programlisting>
+
+            A második rész mint már feljebb emlitetem a main metódus ami csak a tesztelés szempontjábol szükséges, ez 10 számot fog generálni de mivel egy futás alat 2 számot ad a polargen algoritmus ezért a program mindössze ötször fog lefutni.
+        </para>
+        <para>
+            <command>C++ implementácó</command>
+        </para>
+        <programlisting language="c++">
+            <![CDATA[
+            #include <iostream>
+            #include <cstdlib>
+            #include <cmath>
+            #include <ctime>
+            class polargen
+            {
+                public:
+                polargen();
+                    double kovetkezo();
+                        ~polargen(){}
+                private:
+            bool nincsTarolt;
+            double tarolt;
+    };
+    polargen::polargen()
+    {
+        nincsTarolt = true;
+        std::srand (std::time(NULL));
+    };
+    double polargen::kovetkezo()
+    {
+        if (nincsTarolt)
+    {
+           double u1, u2, v1, v2, w;
+        do
+            {
+            u1 = std::rand () / (RAND_MAX + 1.0);
+            u2 = std::rand () / (RAND_MAX + 1.0);
+            v1 = 2 * u1 - 1;
+            v2 = 2 * u2 - 1;
+            w = v1 * v1 + v2 * v2;
+            }
+        while (w > 1);
+        double r = std::sqrt ((-2 * std::log (w)) / w);
+        tarolt = r * v2;
+        nincsTarolt = !nincsTarolt;
+        return r * v1;
+    }
+        else
+        {
+        nincsTarolt = !nincsTarolt;
+        return tarolt;
+        }
+    };
+    int main()
+    {
+        polargen rnd;
+            for (int i = 0; i < 10; ++i)
+            std::cout << rnd.kovetkezo() << std::endl;
+    }
+            ]]>
+            </programlisting>
+    <para>
+        A Java Sun-os implementáció és az általunk megirt algoritmus nagyon hasonlóak. Az az álapot van megoldva a JDK-ban hogy amedig egy szál éppen a metódust veszi igénybe addig a többinelók várnia kell. Erre a syncronized-ot használja.Illetve itt a StrictMath osztály kerül meghivásra ami anyiban különbözik a Math osztálytól, hogy környezetfüggetlenül ugyna azt az eredményt fogja visszaadni.
+    </para>
+
+        <programlisting language="java">
+            <![CDATA[
+            private double nextNextGaussian;
+            private boolean haveNextNextGaussian = false;
+
+            synchronized public double nextGaussian() {
+                if (haveNextNextGaussian) {
+                    haveNextNextGaussian = false;
+                    return nextNextGaussian;
+                } 
+            else {
+                double v1, v2, s;
+                do {
+                    v1 = 2 * nextDouble() - 1;   // between -1.0 and 1.0
+                    v2 = 2 * nextDouble() - 1;   // between -1.0 and 1.0
+                    s = v1 * v1 + v2 * v2;
+                } 
+                while (s >= 1 || s == 0);
+                double multiplier = StrictMath.sqrt(-2 * StrictMath.log(s)/s);
+                nextNextGaussian = v2 * multiplier;
+                haveNextNextGaussian = true;
+                return v1 * multiplier;
+                }
+            }
+            ]]>
+        </programlisting>
+    </section>        
+     
+        
+    <section>
+        <title>„Gagyi”</title>
+        <para>
+            Az ismert formális <![CDATA[while (x <= t && x >= t && t != x);]]> tesztkérdéstípusra adj a szokásosnál (miszerint x,
+            t az egyik esetben az objektum által hordozott érték, a másikban meg az objektum referenciája) „mélyebb”
+            választ, írj Java példaprogramot mely egyszer végtelen ciklus, más x, t értékekkel meg nem! A példát építsd
+            a JDK Integer.java forrására 3, hogy a 128-nál inkluzív objektum példányokat poolozza!
+        </para>
+        <para>
+            Ez a feladat azon alapul, hogy javában megkülönböztetünk érték szerintit és az identitáson alapuló egyenlőséget. A feladatnak megfelelően mi a megoldásunkat a Integer osztályra fogjuk épiteni. Nézzük is meg a példa programjainkat:
+        </para>
+        <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Arroway/Gagyi/vegtelen.png" scale="50" />
+                </imageobject>
+        </mediaobject>
+        <para>
+        Láthatjuk, hogy a programunk végtelen ciklusba fog lépni, mivel <![CDATA[x<=t]]>, <![CDATA[x>=t]]> és t!=x is igaz lesz mivel egyszere, ugyanabba az időben és helyen a memoriában nem létezhet egy osztályból két példány. Visszont ha átirjuk a -129-et -128-ra akkor más lesz a helyzet:
+        </para>
+        <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Arroway/Gagyi/leal.png" scale="50" />
+                </imageobject>
+        </mediaobject>
+        <para>
+        Mint láthatjuk a program le fog álni. Ez azért van mert az Integer osztály gyorsítótárazza a [-128,127] intervalumot igy azok hashcodeja megegyezik. Így ha ebből a tartományból választunk egy számot, akkor t!=x hamis lesz mivel x egyenlő lesz t-vel. Amenyiben mégis érték alapján szeretnénk összehasonlítani x-et t-vel akkor erre az equals metódust kell használnunk.
+        </para>
+
+    </section>                                                                                                                                 
+    <section>
+        <title>Yoda</title>
+        <para>
+            Írjunk olyan Java programot, ami java.lang.NullPointerEx-el leáll, ha nem követjük a Yoda conditions-t!
+            https://en.wikipedia.org/wiki/Yoda_conditions
+        </para>
+        <para>
+            A Yoda conditions egy programozási stílus ahol egy kifejezés két részét felcseréljük. Ennek a stílusnak a neve a Star Wars Yoda nevű karakteréből származik aki nem szabványosan beszél angolul. A Yoda feltétel használatával elkerülhetjük az összehasonlításoknál felmerülő lehetséges hibát, azt hogy akaratlanul rendelnünk hozzá, nem pedig feltételt határozunk meg.
+        </para>
+        <para>
+            Illetve elkerülhetjük a nem biztonságos null viselkedés egyes típusit.
+            <programlisting language="java">
+                <![CDATA[
+                String myString = null;
+                if (myString.equals("foobar")) { /* ... */ }
+                ]]>
+            </programlisting>
+            Ez a kód NullPointerException hibát adja
+            <programlisting language="java">
+                <![CDATA[
+                String myString = null;
+                if ("foobar".equals(myString)) { /* ... */ }
+                ]]>
+            </programlisting>
+            Igy pedig hamis értéket fogunk viszakapni, ahogyn az várható. Ez azért történik mivel null objektumra nem hívhatunk meg metódust.
+        </para>
+    </section>
+
+    <section>
+        <title>Kódolás from scratch</title>
+        <para>
+            Induljunk ki ebből a tudományos közleményből: http://crd-legacy.lbl.gov/~dhbailey/dhbpapers/bbpalg.pdf és csak ezt tanulmányozva írjuk meg Java nyelven a BBP algoritmus megvalósítását! 
+            Ha megakadsz, de csak végső esetben: https://www.tankonyvtar.hu/hu/tartalom/tkt/javat-tanitokjavat/apbs02.html#pi_jegyei (mert ha csak lemásolod, akkor pont az a fejlesztői élmény marad ki, melyet szeretném, ha átélnél).
+        </para>
+        <para>
+            Ezuttal a Bailey-Borwein-Plouff algoritmussal fogjuk kiszámolni a π-nek az értékét egy tetszőleges hexadecimális számjegyétől kezdődően.
+        </para>
+        <programlisting language="java">
+                <![CDATA[
+                public class PiBBP {
+                
+                String d16PiHexaJegyek;
+            
+                public PiBBP(int d) {
+
+                    double d16Pi = 0.0d;
+
+                    double d16S1t = d16Sj(d, 1);
+                    double d16S4t = d16Sj(d, 4);
+                    double d16S5t = d16Sj(d, 5);
+                    double d16S6t = d16Sj(d, 6);
+
+                    d16Pi = 4.0d*d16S1t - 2.0d*d16S4t - d16S5t - d16S6t;
+
+                    d16Pi = d16Pi - StrictMath.floor(d16Pi);
+
+                    StringBuffer sb = new StringBuffer();
+
+                    Character hexaJegyek[] = {'A', 'B', 'C', 'D', 'E', 'F'};
+
+                    while(d16Pi != 0.0d) {
+
+                        int jegy = (int)StrictMath.floor(16.0d*d16Pi);
+
+                        if(jegy<10)
+                            sb.append(jegy);
+                        else
+                            sb.append(hexaJegyek[jegy-10]);
+
+                        d16Pi = (16.0d*d16Pi) - StrictMath.floor(16.0d*d16Pi);
+                    }
+
+                    d16PiHexaJegyek = sb.toString();
+                }
+                public double d16Sj(int d, int j) {
+
+                    double d16Sj = 0.0d;
+
+                   for(int k=0; k<=d; ++k)
+                        d16Sj += (double)n16modk(d-k, 8*k + j) / (double)(8*k + j);
+
+                    return d16Sj - StrictMath.floor(d16Sj);
+                }
+                ]]>
+                </programlisting>
+                <para>
+                    Ezen részeben láthatjuk a BBP algoritmus implementációját. Először is láthatunk egy d16PiHexaJegyek változót amibne majd az eredményünk tárolodni fog. A PiBBP metódusban meghívjuk a d16Sj metódust ami paraméterül megkapja a d-t, ami azt adja meg hogy hanyadik tizedesjegytől kivánjuk meghatározni a π értékét illetve második paraméterbe megkapja a BBP algoritmusbna meghatározott számok egyikét. Illetve miután meghatározta a számot hexadecimálissá kell alakitania. Ezt úgy teszi meg, hogy a szám minden egyes számjegyét megvizsgálja és ha az nem kisebb mint tíz akkor az adott számjegyből kivonja a tizet és a hexaJegyek tömbből azt az elmet szurja be helyére amelynek indexe megegyezik a kapott számmal.
+                </para>
+                <programlisting language="java">
+                <![CDATA[
+                public long n16modk(int n, int k) {
+
+                    int t = 1;
+                    while(t <= n)
+                        t *= 2;
+
+                    long r = 1;
+
+                    while(true) {
+
+                        if(n >= t) {
+                            r = (16*r) % k;
+                            n = n - t;
+                        }
+
+                        t = t/2;
+
+                        if(t < 1)
+                            break;
+
+                        r = (r*r) % k;
+
+                    }
+
+                    return r;
+                }
+                ]]>
+                </programlisting>
+                <para>
+                    n16modk a d16Sj metódus használja, ebben a részben számolja ki a program a a 16^n mod k-t.
+                </para>
+                <programlisting language="java">
+                <![CDATA[
+                public String toString() {
+
+                    return d16PiHexaJegyek;
+                }
+                
+                public static void main(String args[]) {        
+                    System.out.print(new PiBBP(1000000)+"\n");
+                }
+            }
+        ]]>
+        </programlisting>
+        <para>
+            A program végső része már csak a kiszámolt hexa jegy visszaadását láthatjuk illetve egy maint ami példányosít egy BBP algoritmust implementáló objektumot.
+        </para>
+    </section>
+
+</chapter>                

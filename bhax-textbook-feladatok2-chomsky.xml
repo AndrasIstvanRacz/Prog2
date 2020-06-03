@@ -1,0 +1,246 @@
+<chapter xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0" xml:lang="hu">
+    <info>
+        <title>Helló, Chomsky!</title>
+        <keywordset>
+            <keyword/>
+        </keywordset>
+    </info>
+    
+    <section>
+        <title>Encoding</title>
+        <para>
+        Fordítsuk le és futtassuk a Javat tanítok könyv MandelbrotHalmazNagyító.java forrását úgy, hogy a fájl nevekben és a forrásokban is meghagyjuk az ékezetes betűket! https://www.tankonyvtar.hu/hu/tartalom/tkt/javat-tanitok-javat/adatok.html
+        </para>
+        <para>
+        Ebben a feldatban azt kellet bemutatnunk, hogy a javac forditónak megadhatjuk, hogy milyen karakterkódolást alkalmazon. Ezt a tankönyvtárban talalható mandelbrot nagyíton fogjuk szemléltetni ahol láthatjuk, hogy a Magyar nyelvben használt karakterek találhatóak példáúl a változónevekben. Ha ezt csak simán probálnánk forditani errorok sorozatát kapjuk. Ez azért van, mert a javac alapból a rendszer alapértelmezet karakterkódolást használja. Ha mi azt akarjuk, hogy mást használjon azt a -encoding "használni kívánt kódolás" kapcsólot használjuk, szóval a forditás parancs így fog kinézni javac -encoding "ISO-8859-2" MandelbrotIterációk.java MandelbrotHalmazNagyító.java. Mint láthatjuk nekünk az ISO-8859-2 kódolás a megfelelő mivel ez tartalmaza az Eastern European (Albanian, Croatian, Czech, English, German, Hungarian, Latin, Polish, Romanian, Slovak, Slovenian, Serbian) karaktereket. Ilyen módon használhatunk Magyar ékezetes karaktereket változo, osztály vagy fügvény névként, de ennek ellenére nagyon ajánlot elkerülni.
+        </para>
+        <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Chomsky/Encoding/ManFut" scale="50" />
+                </imageobject>
+        </mediaobject>
+    </section>
+
+    <section>
+        <title>l334d1c4</title>
+        <para>
+            Ebben a feladatban írnunk kellet egy olyan OO Java vagy C++ osztályt, amely leet cipherként működik. A leet cipher egyfajt betühelyetesítést jelent ahol egy adot betüt  kicseréljük egy rá nagyon hasonlító másik karakterre például az a betüt a @-ra.Erről bővebben a https://simple.wikipedia.org/wiki/Leet oldalon olvashattok.
+        </para>
+        <para>
+            Ez tulajdonképen egy nagyon egyszerű kis feladat, nem szükséges tulgondolni, bonyolítani a dolgot. A programunk kapni fog egy Angol szót vagy mondatot és a karaktereit át fogja convertálni az adot betü leetes megfelelőjére. Ezt ugy valosítotuk meg, hogy a programban meghatároztuk, hogy melyik betühöz milyen karakter társul és az így kapott párosok alapján cseréltük ki a betüket. Ha amenyiben a program olyan karaktert kap aminek nincs meghatározva a leetes párja akkor a kapott karaktert adja vissza. Miután a program átfordítota a felhasználó által bevitt szöveget lehetőség van egy újabb szöveg leetelésére vagy a programból való kilépésre. Ez úgy lett megoldva, hogy a toLeetCode metódust egy do while-on belül hívtuk meg. A kész kód és a futtatás eredményét lent láthatjuk.
+        </para>
+        <programlisting language="java">
+        <![CDATA[
+class L33tConvertor {
+
+    private String toLeetCode(String str) {
+        Pattern pattern = Pattern.compile("[^a-zA-Z]");
+        StringBuilder result = new StringBuilder();
+        HashMap<Character, String> map = new HashMap<Character, String>();
+        map.put('A', "@");
+        map.put('B', "ß");
+        map.put('C', "©");
+        map.put('D', "đ");
+        map.put('E', "€");
+        map.put('F', "ƒ");
+        map.put('G', "6");
+        map.put('H', "#");
+        map.put('I', "!");
+        map.put('J', "¿");
+        map.put('K', "X");
+        map.put('L', "£");
+        map.put('M', "M");
+        map.put('N', "r");
+        map.put('O', "0");
+        map.put('P', "p");
+        map.put('Q', "0");
+        map.put('R', "®");
+        map.put('S', "$");
+        map.put('T', "7");
+        map.put('U', "µ");
+        map.put('V', "v");
+        map.put('W', "w");
+        map.put('X', "%");
+        map.put('Y', "¥");
+        map.put('Z', "z");
+        
+        for (int i = 0; i < str.length(); i++) {
+            char key = Character.toUpperCase(str.charAt(i));
+            Matcher matcher = pattern.matcher(Character.toString(key));
+            if (matcher.find()) {
+                result.append(key);
+                result.append(' ');
+            } else {
+                result.append(map.get(key));
+            }
+        }
+        return result.toString();      
+    }
+
+    public static void main(String[] args) throws IOException {
+        L33tConvertor obj = new L33tConvertor();
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        String leetWord;
+        int cont;
+        do {
+
+                    System.out.println("\nEnter the English Words :-");
+                    leetWord = br.readLine();
+                    String leet = obj.toLeetCode(leetWord);
+                    System.out.println("The 1337 Code is :- " + leet);
+
+            System.out.println("\n\nDo you want to continue ? [1=Yes and 0=No]");
+            cont = Integer.parseInt(br.readLine());
+        } while (cont != 0);
+    }
+}
+        ]]>
+        </programlisting>
+        <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Chomsky/Leet/LeetFut.png" scale="70" />
+                </imageobject>
+        </mediaobject>
+    </section>
+
+    <section>
+        <title>Full screen</title>
+        <para>
+            A feladatunk az, hogy készitsünk egy Java Full screen programot. 
+        </para>
+        <para>
+            <command>Screen.java</command>
+        </para>
+        <programlisting language="java">
+        <![CDATA[
+            import java.awt.*;
+            import javax.swing.JFrame;
+
+
+            public class Screen {
+                private GraphicsDevice vc;
+                
+                public Screen() {
+                    GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
+                    vc = env.getDefaultScreenDevice();
+                }
+                
+                public void setFullScreen(DisplayMode dm, JFrame window) {
+                    window.setUndecorated(true);
+                    window.setResizable(true);
+                    vc.setFullScreenWindow(window);
+                    
+                    if(dm != null && vc.isDisplayChangeSupported()) {
+                        try {
+                            vc.setDisplayMode(dm);
+                        }catch(Exception ex) {}
+                    }
+                    
+                }
+                
+                public Window getFullScreenWindow(){
+                    return vc.getFullScreenWindow();
+                }
+                
+                public void restoreScreen() {
+                    Window w = vc.getFullScreenWindow();
+                    if(w != null) {
+                        w.dispose();
+                    }
+                    vc.setFullScreenWindow(null);
+                }
+
+            }
+        ]]>
+        </programlisting>
+        <para>
+            <command>bucky.java</command>
+        </para>
+        <programlisting language="java">
+        <![CDATA[
+            import java.awt.*;
+            import javax.swing.JFrame;
+
+            public class bucky extends JFrame {
+                public static void main(String[] args) {
+                    
+                    DisplayMode dm = new DisplayMode(800,600,16, DisplayMode.REFRESH_RATE_UNKNOWN);
+                    bucky b = new bucky();
+                    b.run(dm);
+                    
+                }
+
+                public void run(DisplayMode dm) {
+                    getContentPane().setBackground(Color.DARK_GRAY);
+                    setForeground(Color.WHITE);
+                    setFont(new Font("Arial", Font.PLAIN, 24));
+                    
+                    Screen s = new Screen();
+                    try {
+                        s.setFullScreen(dm, this);
+                        try {
+                            Thread.sleep(5000);
+                        }catch(Exception ex) {} 
+                    }finally {
+                        s.restoreScreen();
+                    }
+                }
+                
+                public void paint(Graphics g) {
+                    super.paint(g); 
+                    g.drawString("Ez Egy Szoveg", 200, 200);
+                }
+            }
+        ]]>
+        </programlisting>
+        <para>
+        Láthatjuk, a fullscreen alkalmazásunk két fájlból áll a Screen.java-ban létrehozunk egy ablakot ami a window.setUndecorated(true); sor miat válik fulscreenné, ugyanis abban az esetben ha false-ra álitjuk akkor egy szabadon átméretezhető ablakot fogunk kapni. És ha már az átméretezésnél tartunk az is true/false-al álitható window.setResizable(); segitségével. Ez nekünk true-ra van állitva, de mivel mi fullscreennel dolgozunk az átméretezés lehetöségét nem fogjuk érezni. A Screen.java álományban továbbá még nagyon fontos megemlíteni a restoreScreen metódust ami a kijelző vissza állításáért felel, ugyanis nem elegendő a fullscreen ablak létrehozásárol gondoskodnunk mivel annak eltüntetéséjért is mi felelünk.
+        </para>
+        <para>
+        Most, hogy képesek vagyunk egy teljesképernyös ablak létrehozására kezdenünk is kellen vele valamit, és pontosan erre láthatunk egy egyszerü példát a bucky.java álományban. Ez mindössze anyit fog tenni hogy kiír egy szoveget a kijelzőre 5 másodpercre aztán leál. Azt, hogy az ablakunk, hogy nézzen ki és hogy medig fusson a run metódusban határoztuk meg. A getContentPane().setBackground(Color.DARK_GRAY); sötétszürkére állítja a hátteret az előtert pedig a setForeground(Color.WHITE);-tal állítjuk fehérre. A setFont-tal állítjuk be a betűtípust és méretet. A run metódusnak a második fele adja meg, hogy menyi ideig fuson az alkalmazásunk. Ezt egy try catch-el oldotuk meg ez ha megkapja a displayt akkor altatja a szálat 5 másodpercig utána a restoreScreen-nel eltünteti az ablakunkat. És végül már csak a paint metódusunk maradt ami semmi egyebet nem csinál minthogy kiírja a megadott szöveget.
+        </para>
+        <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Chomsky/FullScreen/EzEgySzoveg.png" scale="40" />
+                </imageobject>
+        </mediaobject>
+    </section>
+
+    <section>
+        <title>Paszigráfia Rapszódia OpenGL full screen vizualizáció</title>
+        <para>
+            Ebben a feladatban a Paszigráfia Rapszódia OpenGL programban kellet apróbb módosításokat eszközölnünk. De elöször ejtsünk néhány szót a Paszigráfia rapszódiáról. Ennek a célja egy univerzális mesterséges nyelv létrehozása és annak széles körű elterjesztése. Ezt úgy valósítja meg, hogy a matematikai logikát használja. Feltehetnénk a kérdést, hogy miért jött ez létre és mire használható. A válasz viszonylag egyszerű és egyben a Paszigráfia Rapszódia létrehozásának motivációját is ez képezi, hogy legyen egy olyan matematikai logikai alapú mesterséges, de természetesen a nemzeti anyanyelveinkre épülő nyelvünk, amely játékok alapjául is szolgálhat, s még egyben a tudomány egyetemes nyelve is lehet.
+        </para>
+        <para>
+            Most, hogy a Paszigráfia Rapszódiával megismerkedtünk át is térhetünk magára a programra. Mivel windows 10 Linux subsystemmel dolgozunk ezért mindenkelöt szükségünk van az xming alkalmazásra, mivel a subszstem nem képes grafikus alkalmazás futtatására. Miután telepítetük az xminget és elindíttuk megnyitjuk a WSL-t és lefutatjuk a <![CDATA[export DISPLAY=:0]]>. Innentől kezdve ebben a terminálban képesek leszünk futtatni grafikus alkalmazásokat. A feladathoz a https://gitlab.com/nbatfai/pasigraphy-rhapsody/tree/master/para/docs található para6.cpp-t fogjuk használni.
+        </para> 
+        <para>
+            Ezt a g++ para6.cpp -o para -lboost_system -lGL -lGLU -lglut parancsal fordithatjuk majd a
+        </para>
+        <para>
+            ./para 3:2:1:1:0:3:2:1:0:2:0:2:1:1:0:3:3:0:2:0:1:1:0:1:0:1:0:1:0:2:2:0:1:1:1:3:2:1:0:2:0:2:1:1:1:2:3:0:1:1:1:1
+            :0:3:3:0:1:0:2:1:0:1:0:2:2:0:0:0:1:3:1:0:1:3:2:1:0:2:0:3:3:0:1:0:2:1:0 ezzel futtathatjuk. Ha ezeket megtetük akkor már müködik is a programunk és láthatjuk a kockákat amik egy logikai kifejezést jelentenek.
+        </para>
+            
+            <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Chomsky/OpenGLs/ForditFuttat.jpg" scale="40" />
+                </imageobject>
+            </mediaobject>
+         <para>
+            Most, hogy ezzel végeztünk és a kódunk müködik megváltoztathatjuk a kockák színét amit a glColor3f ( .188f, 0.209f, 0.190f ) paramétereinek átírásával tehetünk meg. Ez a három szám rgb kódokkal adja meg az adott szint. A második dolog amit megtetünk az irányítás megváltoztatása volt mostmár a forgatások nem inverz módon történik. Ezt a skeyboard fügvény módosításaval tudtuk elérni.
+        </para>
+        <para>
+            <command>Ennek a megvalósítását láthatjuk:</command>
+        </para>
+        <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Chomsky/OpenGLs/skeyboard.jpg" scale="70" />
+                </imageobject>
+        </mediaobject>
+    </section>
+    
+</chapter>
+
+
+

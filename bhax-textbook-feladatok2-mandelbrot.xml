@@ -1,0 +1,241 @@
+<chapter xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0" xml:lang="hu">
+    <info>
+        <title>Helló, Mandelbrot!</title>
+        <keywordset>
+            <keyword/>
+        </keywordset>
+    </info>
+    
+    <section>
+        <title>Reverse engineering UML osztálydiagram</title>
+        <para>
+        UML osztálydiagram rajzolása az első védési C++ programhoz. Az osztálydiagramot a forrásokból generáljuk (pl. Argo UML, Umbrello, Eclipse UML) Mutassunk rá a kompozíció és aggregáció kapcsolatára a forráskódban és a diagramon, lásd még: https://youtu.be/Td_nlERlEOs.
+        </para>
+        <para>
+        https://arato.inf.unideb.hu/batfai.norbert/UDPROG/deprecated/Prog1_6.pdf (28-32 fólia)
+        </para>
+        <para>
+        Ebben a feladatban UML osztálydiagramot készítettünk az első védési C++ programhoz. Az uml diagrammal az objektumorientált rendszerünkben lévő osztályokat és azok közöt fennálló kapcsolatokat modellezi. Mi erre a feladatra a Visual Paradigma nevű szoftvert használtuk. Ez képes arra hogy a már meglévő, mi esetünkbe C++ fájlból automatikusan C++ fájlt generáljon. Ezt a programon belül a Tools fül Code menüjét lenyitva az Instan revers menupontal tehetjük meg. Ha erre rákattintunk akkor megnyilik egy új ablak ott megadjuk a C++ fájlt amit reversölni kívánunk és rákatintunk az ok gombra. Miután ezt az első védési C++ programmal megcsináltuk ezt az eredményt kaptuk:
+        </para>
+        <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Mandelbrot/ReverseEngineeringUML/UMLdiagram.jpg" scale="70" />
+                </imageobject>
+        </mediaobject>
+		<para>
+        Most, hogy a UML diagramot elkészítetük nézzük is meg a kompozíció és agregácíó kapcsolatát. Az agregáció egy tartalmazást jelölö aszociáció. A kompozíciónál a tartalmazott és a tartalmazó együtt jön létre és együtt szünik meg. Nálunk például a Csomopont gyoker elem egy kompozíció.
+        </para>
+    </section>
+
+    <section>
+        <title>Forward engineering UML osztálydiagram</title>
+        <para>
+            Ez a feladat hasonló az elözöhöz anyi külömbség van, hogy ezuttal egy UML diagramból fogjuk legenerálni a mi esetünkben java fájlokat. Ehhez szintén a Visual Paradigmát fogjuk alkalmazásb venni először készítenünk kell egy osztály diagrammot. Én a Liskov felyezetben megírt LSP.java foráskódhoz fogok UML Class diagrammot létrehozni.
+        </para>
+        <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Mandelbrot/ForwardEngineeringUML/UMLdiagram.jpg" scale="70" />
+                </imageobject>
+        </mediaobject>
+        <para>
+            Most, hogy az UML diagrammunk megvan át is convertálhatjuk kóddá. Az átalakítás elvégeztével láthatjuk hogy négy darab új fájlt hozott létre az UML diagramunkból, egyet az LPS, egyet a Rectangle és egyet a Square osztálynak illetve egy build fájlt. Ezeke lent láthatjuk.
+        </para>
+        <programlisting language="java">
+<![CDATA[
+class Rectangle {
+	private int _length;
+	private int _breadth;
+
+	public int getArea() {
+		throw new UnsupportedOperationException();
+	}
+
+	public void setLength(int aLength) {
+		this._length = aLength;
+	}
+
+	public int getLength() {
+		return this._length;
+	}
+
+	public void setBreadth(int aBreadth) {
+		this._breadth = aBreadth;
+	}
+
+	public int getBreadth() {
+		return this._breadth;
+	}
+}
+]]>
+</programlisting>
+
+<programlisting language="java">
+<![CDATA[
+class Square extends Rectangle {
+
+	@Override
+	public void setBreadth(int aBreadth) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void setLength(int aLength) {
+		throw new UnsupportedOperationException();
+	}
+}
+]]>
+</programlisting>
+<programlisting language="java">
+<![CDATA[
+class LSP {
+
+	public void calculateArea(Rectangle aR) {
+		throw new UnsupportedOperationException();
+	}
+
+	private String printError(String aErrorIdentifer, Rectangle aR) {
+		throw new UnsupportedOperationException();
+	}
+
+	public static void main(String[] aArgs) {
+		throw new UnsupportedOperationException();
+	}
+}
+]]>
+</programlisting>
+<programlisting language="xml">
+<![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="build">
+	<path id="build.classpath">
+		<pathelement location="classes"/>
+	</path>
+	<target name="init">
+		<mkdir dir="classes"/>
+	</target>
+	<target name="clean">
+		<delete dir="classes"/>
+	</target>
+	<target depends="init" name="build">
+		<javac srcdir="." destdir="classes" source="1.5" target="1.5" fork="yes">
+			<classpath refid="build.classpath"/>
+			<include name="Square.java"/>
+			<include name="Rectangle.java"/>
+			<include name="LSP.java"/>
+		</javac>
+	</target>
+</project>
+]]>
+</programlisting>
+
+    </section>
+
+
+    <section>
+        <title>BPMN</title>
+        <para>
+            Ebben a feladatban egy tevékenységet kellet modellezünk a BPMN nyelv segítségével. Én egy éttermi rendelést írtam le.
+        </para>
+		<mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Mandelbrot/BPMN/BPMNdiagram.jpg" scale="50" />
+                </imageobject>
+        </mediaobject>
+		<para>
+			Mint láthatjuk itt egy kétirányú kommunikáció történik az étterem és a vendég közzöt. Elöször a vevő felhívja az éttermet majd megkérdezi a várakozási időt. Erre a pénztáros megadja a várakozási időt. A kapott informácio alapján a vevő eldönti, hogy a várakozási idő hosszú-e. Ha nem akkor leadja a rendelést a pénztárosnak, itt történik még egy feldolgozás majd az információ átadodik a Chef lineba. Itt az étel elkészül majd a Package Food álapotba kerül ami a Driver, Deliver Food továbbítodik. Az étel kiszálításr kerül a vevő átadja a fizetséget a Drivernek aki atveszi azt majd új esemény kezdödik a Restaurant oldaláról. A vevő az étel elfogyasztása után szintén valamilyen új esemény kezdödik. Az étterem és a vevő esetében is elöfordulhat, hogy az új esemény helyet a tevékenység vége van.
+		</para>
+    </section>
+
+    <section>
+        <title>TeX UML</title>
+        <para>
+            Ebben a feladatban ismét egy UML osztálydiagramot fogunk késziten de ezuttal valamilyen TeX-es csomag felhasználásával.
+            Mi a MetaUML-t fogjuk használni. 
+        </para>
+        <para>
+        <command>MetaUML telepítése Ubuntu rendszerre</command>
+        </para>
+        <para>
+        Először nyitunk egy terminált, majd fel kel raknunk a texlive-metapostot<programlisting><![CDATA[sudo apt install texlive-metapost]]></programlisting> ezután lefutatjuk 
+        <programlisting><![CDATA[https://github.com/ogheorghies/MetaUML.git]]></programlisting> parancsot. Miután már megvannak a szükséges fájlok csak annyi maradt hátra hogy a következő három sort(ami a fájljainkat a megfelelő helyekre pakolja) lefuttasuk 
+        <programlisting><![CDATA[
+export METAUML_DIR=/usr/share/texlive/texmf-dist/metapost/metauml
+sudo mv ${METAUML_DIR} ${METAUML_DIR}-backup-$(date +%s)
+sudo ln -svf ${PWD}/MetaUML/src /usr/share/texlive/texmf-dist/metapost/metauml]]></programlisting>
+        </para>
+        <para>
+        Most, hogy a telepítésel végeztünk el is készithetjük az UML diagramunkat az OOCWC projekről. A MetaUML mp fájlokból generál pdf-et.
+        </para>
+        <para>
+        <command>Alapvető parancsok</command>
+        </para>
+        <para>
+            Elöször is a classok elhelyezésével kell foglalkoznunk ami a Class.Név("ClassNeve") parancsal hozznuk létre. Ez után az elsö zárojel közöt a class atributumait a másodikba pedig a metódusok kerulnek.
+        </para>
+        <programlisting><![CDATA[
+		Class.A("MyShmClient")
+		("# nr_graph: NodeRefGraph*", "# m_teamname: string", "- nr2v: map<unsigned_object_id_type, NRGVertex>")
+		("+MyShmClient()",
+		"+~MyShmClient()",
+		"+start()",
+		"+start10()",
+		"+num_vertices()",
+		"+print_edges()",
+		"+print_vertices()",
+		"+bgl_graph()",
+		"+hasDijkstraPath()",
+		"+hasBellmanFordPath()",
+		"-foo()",
+		"-init()",
+		"-gangsters()",
+		"-initcops()",
+		"-pos()",
+		"-car()",
+		"-route()");
+]]></programlisting>
+		<para>
+            A Classokhoz még hozzátartoznak a stereotzepok létrehozása ezt a classStereotypes.Név("StereotypeNeve").
+        </para>
+		<programlisting><![CDATA[
+		classStereotypes.B("<<Struct>>");
+		classStereotypes.C("<<Typedef>>");
+		classStereotypes.D("<<Typedef>>");
+		classStereotypes.L("<<enumeration>>");
+		classStereotypes.P("<<enumeration>>");
+		classStereotypes.T("<<Struct>>");
+]]></programlisting>
+		<para>
+            Az igy létrehozott Classokat (amit én az ABC betüivel neveztem el) packageekbe kellet raknunk. Packageet a classhoz hasonlóan Package.Neve("PackageNeve") hozunk létre de ebben az esetben csak egy zárojel lesz amibe a Packagebe belerakni kívánt classok nevei lesznek.
+        </para>
+        <programlisting><![CDATA[
+		Package.Q("sampleclient")(A, B, C, D, E);
+]]></programlisting>
+		<para>
+            Ezután már csak a helyére kell raknunk a létrehozot objektumokat, hogy ne egymás hegyén hátán legyenek. Ezt különbözö pozicionáló parancsokkal tehetjük meg:
+        </para>
+
+		<mediaobject>
+            <imageobject>
+                <imagedata fileref="source/MasodikFejezet/Mandelbrot/TeXUML/Pos.png" scale="80" />
+            </imageobject>
+        </mediaobject>
+
+
+        <para>
+        Az mp fájl létrehozása után már csak egy feladatunk van a célig mégpedig a pdfünk létrehozása amit az <![CDATA[mptopdf fajlnev.mp]]>-vel tehetünk meg. Ezzel létre is hoztuk az első olyan UML diagramunkat amit egy TeX csomaggal hoztunk létre.
+        </para>
+        <para>
+        Nézük is meg az eredményt:
+        </para>
+        <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Mandelbrot/TeXUML/UMLdiagram.jpg" scale="40" />
+                </imageobject>
+        </mediaobject>
+
+    </section>
+    
+</chapter>
+
+
+

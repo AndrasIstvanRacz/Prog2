@@ -1,0 +1,264 @@
+<chapter xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0" xml:lang="hu">
+    <info>
+        <title>Helló, Gödel!</title>
+        <keywordset>
+            <keyword/>
+        </keywordset>
+    </info>
+
+     <section>
+        <title>Gengszterek</title>
+        <para>
+            Ebben a feladatban a Robotautó világbajnoksággal kellet dolgoznunk méghozzá a gengsztereket lambda segítségével kellet rendeznünk. Ezzen példa alapján most láthatjuk majd a lambda kifejezések előnyeit. A lambda kifejezések inline fügvények írását teszi lehetővé. Ezzek olyan rövidke kódsorok amik nem lesznek újra felhasználva így az elnevezésük is fölösleges. Tekintsük is meg az OOCWC kódrészletet:
+        </para>
+        
+            <programlisting language="c++">
+<![CDATA[
+std::sort ( gangsters.begin(), gangsters.end(), [this, cop] ( Gangster x, Gangster y )
+{
+return dst ( cop, x.to ) < dst ( cop, y.to );
+} );
+]]>
+            </programlisting>
+        <para>
+            Itt az std::sort fügvényt alkalmazzuk a rendezésre. És ez az általunk létrehozot lambda kifejezést felhasználva fog összehasonlítani.
+        </para>
+<programlisting language="c++">
+<![CDATA[
+void sort (RandomAccessIterator first, RandomAccessIterator last, Compare comp);
+]]>
+</programlisting>
+    <para>
+        Ennek segitségével a gengsters vectort fogjuk rendezni az alapján hogy az adot rendőrhöz melyik gengszter van a legküzelebb. A legközelebi gangszter a vektor legelejére kerül.
+    </para>
+    </section> 
+
+     <section>
+        <title>STL map érték szerinti rendezése</title>
+        <para>
+            A feladatunk az volt, hogy érték szerint rendezzünk egy map-et. Ehhez egy új gyűjtemény fajtát használunk amivel ebben a feladatban most megismerkedhetünk. Ebben a feladatban ismét a fénykardhoz fogunk hozzányuli:
+        </para>
+            <programlisting language="c++">
+<![CDATA[
+std::vector<std::pair<std::string, int>> sort_map ( std::map <std::string, int> &rank )
+{
+        std::vector<std::pair<std::string, int>> ordered;
+
+        for ( auto & i : rank ) {
+                if ( i.second ) {
+                        std::pair<std::string, int> p {i.first, i.second};
+                        ordered.push_back ( p );
+                }
+        }
+
+        std::sort (
+                std::begin ( ordered ), std::end ( ordered ),
+        [ = ] ( auto && p1, auto && p2 ) {
+                return p1.second > p2.second;
+        }
+        );
+
+        return ordered;
+}
+]]>
+            </programlisting>
+        <para>
+            A kódot áttanulmányoyva láthatjuk hogy, hogy a map rekordjai egy std::string és egy int típusú kulcspárpokból áll. Ezekkel a rekordokkal feltöltjük az order vektort, majd ezt fogjuk rendezni érték szerint csökkenő sorrendbe. Ehhez a std::sort() függvényt használva, lambda kifejezés segitségével. Ez akkor térít vissza igaz értéket, ha az első pair értéke nagyobb a második pair értékénél.
+        </para>
+
+    </section>   
+
+     <section>
+        <title>Alternatív Tabella rendezése</title>
+        <para>
+            Ebben a feladtaban az Alternatív Tabella programban a <![CDATA[java.lang Interface Comparable<T>]]> szerepét. Tekintsünk rá a Csapat osztályra ahol a Comparable Interface implementálása megtörténik:
+        </para>
+        
+            <programlisting language="c++">
+<![CDATA[
+class Csapat implements Comparable<Csapat> {
+    protected String nev;
+    protected double ertek;
+    public Csapat(String nev, double ertek) {
+        this.nev = nev;
+        this.ertek = ertek;
+}
+    public int compareTo(Csapat csapat) {
+        if (this.ertek < csapat.ertek) {
+            return -1;
+        } else if (this.ertek > csapat.ertek) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+}
+]]>
+            </programlisting>
+        <para>
+            A mi feladatunk az, hogy megmutassuk a Comparable Interface szerepét amire az oracle oldalán megtalálható dokumentáciok választ is adnak. Ebben azt olvashatjuk, hogy rendezés csak olyan listákon működik, amelyek minden eleme implementálja a Comparable Interfacet.
+        </para>
+    </section>   
+
+    <section>
+        <title>GIMP Scheme hack</title>
+        <para>
+            Ebben a feladatban a Mandala Scheme-át fogjuk feldolgozni. Ez a GIMP Script egy mandalát fog létrehozni. Anyit kell tennünk, hogy megadunk egy szót, kiválasztunk nekunk tetsző szint és betütípust és a script ezen adatok felhasználásából létrehoza a mandalánkat. Mandalát ugy készítünk, hogy a képünket lemásoljuk elforgatjuk 90 fokkal majd egymásra illesztjük a két réteget és összevonjuk azokat, majd ezeket a lépéseket ujra megismételjuk 45 és 30 fokkal és rajzolunk két különböző sugarú kört a képünk köré. Ennek implementálását láthatjuk:
+        </para>
+        <programlisting>
+<![CDATA[
+(define (elem x lista)
+
+    (if (= x 1) (car lista) (elem (- x 1) ( cdr lista ) ) )
+
+)
+
+(define (text-width text font fontsize)
+(let*
+    (
+        (text-width 1)
+    )
+    (set! text-width (car (gimp-text-get-extents-fontname text fontsize PIXELS font)))    
+
+    text-width
+    )
+)
+
+(define (text-wh text font fontsize)
+(let*
+    (
+        (text-width 1)
+        (text-height 1)
+    )
+
+    (set! text-width (car (gimp-text-get-extents-fontname text fontsize PIXELS font)))    
+
+    (set! text-height (elem 2  (gimp-text-get-extents-fontname text fontsize PIXELS font)))      
+    
+    (list text-width text-height)
+    )
+)
+
+
+;(text-width "alma" "Sans" 100)
+
+(define (script-fu-bhax-mandala text text2 font fontsize width height color gradient)
+(let*
+    (
+        (image (car (gimp-image-new width height 0)))
+        (layer (car (gimp-layer-new image width height RGB-IMAGE "bg" 100 LAYER-MODE-NORMAL-LEGACY)))
+        (textfs)
+        (text-layer)
+        (text-width (text-width text font fontsize))
+
+        (text2-width (car (text-wh text2 font fontsize)))
+        (text2-height (elem 2 (text-wh text2 font fontsize)))
+
+        (textfs-width)
+        (textfs-height)
+        (gradient-layer)
+    )
+
+    (gimp-image-insert-layer image layer 0 0)
+
+    (gimp-context-set-foreground '(0 255 0))
+    (gimp-drawable-fill layer FILL-FOREGROUND)
+    (gimp-image-undo-disable image) 
+
+    (gimp-context-set-foreground color)
+
+    (set! textfs (car (gimp-text-layer-new image text font fontsize PIXELS)))
+    (gimp-image-insert-layer image textfs 0 -1)
+    (gimp-layer-set-offsets textfs (- (/ width 2) (/ text-width 2))  (/ height 2))
+    (gimp-layer-resize-to-image-size textfs)
+
+    (set! text-layer (car (gimp-layer-new-from-drawable textfs image)))
+    (gimp-image-insert-layer image text-layer 0 -1)
+    (gimp-item-transform-rotate-simple text-layer ROTATE-180 TRUE 0 0)
+    (set! textfs (car(gimp-image-merge-down image text-layer CLIP-TO-BOTTOM-LAYER)))
+
+    (set! text-layer (car (gimp-layer-new-from-drawable textfs image)))
+    (gimp-image-insert-layer image text-layer 0 -1)
+    (gimp-item-transform-rotate text-layer (/ *pi* 2) TRUE 0 0)
+    (set! textfs (car(gimp-image-merge-down image text-layer CLIP-TO-BOTTOM-LAYER)))
+
+    (set! text-layer (car (gimp-layer-new-from-drawable textfs image)))
+    (gimp-image-insert-layer image text-layer 0 -1)
+    (gimp-item-transform-rotate text-layer (/ *pi* 4) TRUE 0 0)
+    (set! textfs (car(gimp-image-merge-down image text-layer CLIP-TO-BOTTOM-LAYER)))
+    
+    (set! text-layer (car (gimp-layer-new-from-drawable textfs image)))
+    (gimp-image-insert-layer image text-layer 0 -1)
+    (gimp-item-transform-rotate text-layer (/ *pi* 6) TRUE 0 0)
+    (set! textfs (car(gimp-image-merge-down image text-layer CLIP-TO-BOTTOM-LAYER)))    
+    
+    (plug-in-autocrop-layer RUN-NONINTERACTIVE image textfs)
+    (set! textfs-width (+ (car(gimp-drawable-width textfs)) 100))
+    (set! textfs-height (+ (car(gimp-drawable-height textfs)) 100))
+        
+	(gimp-layer-resize-to-image-size textfs)
+    
+    (gimp-image-select-ellipse image CHANNEL-OP-REPLACE (- (- (/ width 2) (/ textfs-width 2)) 18) 
+        (- (- (/ height 2) (/ textfs-height 2)) 18) (+ textfs-width 36) (+ textfs-height 36))
+	(plug-in-sel2path RUN-NONINTERACTIVE image textfs)
+        
+    (gimp-context-set-brush-size 22)
+    (gimp-edit-stroke textfs)
+    
+    (set! textfs-width (- textfs-width 70))
+    (set! textfs-height (- textfs-height 70))
+    
+    (gimp-image-select-ellipse image CHANNEL-OP-REPLACE (- (- (/ width 2) (/ textfs-width 2)) 18) 
+        (- (- (/ height 2) (/ textfs-height 2)) 18) (+ textfs-width 36) (+ textfs-height 36))
+	(plug-in-sel2path RUN-NONINTERACTIVE image textfs)
+        
+    (gimp-context-set-brush-size 8)
+    (gimp-edit-stroke textfs)
+        
+    (set! gradient-layer (car (gimp-layer-new image width height RGB-IMAGE "gradient" 100 LAYER-MODE-NORMAL-LEGACY)))
+    
+    (gimp-image-insert-layer image gradient-layer 0 -1)
+	(gimp-image-select-item image CHANNEL-OP-REPLACE textfs)
+	(gimp-context-set-gradient gradient) 
+	(gimp-edit-blend gradient-layer BLEND-CUSTOM LAYER-MODE-NORMAL-LEGACY GRADIENT-RADIAL 100 0 
+	REPEAT-TRIANGULAR FALSE TRUE 5 .1 TRUE (/ width 2) (/ height 2) (+ (+ (/ width 2) (/ textfs-width 2)) 8) (/ height 2))
+	
+	(plug-in-sel2path RUN-NONINTERACTIVE image textfs)
+
+    (set! textfs (car (gimp-text-layer-new image text2 font fontsize PIXELS)))
+    (gimp-image-insert-layer image textfs 0 -1)
+    (gimp-message (number->string text2-height))
+    (gimp-layer-set-offsets textfs (- (/ width 2) (/ text2-width 2)) (- (/ height 2) (/ text2-height 2)))
+    
+    (gimp-display-new image)
+    (gimp-image-clean-all image)
+    )
+)
+
+
+
+(script-fu-register "script-fu-bhax-mandala"
+    "Mandala9"
+    "Creates a mandala from a text box."
+    "Norbert Bátfai"
+    "Copyright 2019, Norbert Bátfai"
+    "January 9, 2019"
+    ""
+    SF-STRING       "Text"      "Bátf41 Haxor"
+    SF-STRING       "Text2"     "BHAX"
+    SF-FONT         "Font"      "Sans"
+    SF-ADJUSTMENT   "Font size" '(100 1 1000 1 10 0 1)
+    SF-VALUE        "Width"     "1000"
+    SF-VALUE        "Height"    "1000"
+    SF-COLOR        "Color"     '(255 0 0)
+    SF-GRADIENT     "Gradient"  "Deep Sea"
+)
+(script-fu-menu-register "script-fu-bhax-mandala" 
+    "<Image>/File/Create/BHAX"
+)]]>
+    </programlisting>
+    <para>
+       Elöször is meghatározzuk a szoveg hoszat a gimp-text-get-extents-fontname-el ami egy listát fog viszaadni aminek az első eleme a szöveg hossza. Erre azéet van szükség, hogy szebb képet hozzunk létre. Ezután elvégezük a különböző szögekkel való elforgatást. A kód legvégén láthatjuk hogy létrehozunk egy ablakot amiben a felhasználó meg tudaj adni hogy milyen szóból szeretné elkészíteni a mandalát illetve megadhatja a betütípus, a betüszínt és betümérettet.
+    </para>
+    </section>                                                                         
+</chapter>                

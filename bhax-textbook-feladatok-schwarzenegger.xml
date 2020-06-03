@@ -1,0 +1,216 @@
+<chapter xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0" xml:lang="hu">
+    <info>
+        <title>Helló, Schwarzenegger!</title>
+        <keywordset>
+            <keyword/>
+        </keywordset>
+    </info>
+    <section>
+        <title>Szoftmax Py MNIST</title>
+        <para>
+            Ezen feladat helyet az SMNIST-et csináltam.
+        </para>
+    </section>            
+
+    <section>
+        <title>Mély MNIST</title>
+        <para>
+            Ezen feladat helyet az SMNIST-et csináltam.
+        </para>
+    </section>                
+                  
+    <section>
+        <title>Minecraft-MALMÖ</title>
+        <para>
+        </para>
+        <para>
+            A MALMÖ project a microsoft álltal létrehozott olyan platform amely segitségével a mesterséges inteligenciával végezhetünk kutatásokat, méghozá az igen nagy népszeruséget élvező Minecraft játékon keresztül.A megoldáshoz nagy segítséget nyujtot a Malmo Platform Tutorial amit a következő címen találhatunk meg <link xlink:href="https://microsoft.github.io/malmo/0.17.0/Python_Examples/Tutorial.pdf"> https://microsoft.github.io/malmo/0.17.0/Python_Examples/Tutorial.pdf.</link>
+        </para>
+        <para>
+            A feladat elkezdése elött meg kell látogatnunka a következő linket <link xlink:href="https://github.com/Microsoft/malmo"> https://github.com/Microsoft/malmo</link>. Itt láthatjuk, hogy a Malmö telepítése elvégezhető Python Pip-el is illetve használhatjuk a pre-built verziókat is.Én a Linux pre-built verziót használtam a feladat megoldásához.Bármelyik verzió használásához szukségünk lesz az open JDK 8-ra. Ezután megnyitotuk a letöltött Malmo mappát és az abban található Minecraft file-t megnyitjuk terminálban.Majd ./launchClient.sh parancssal elinditjuk a clienst.            
+        </para>
+        <para>
+            Mostmár, hogy fut a cliensünk elkezdhetünk foglalkozni a feladatunkkal ami az volt, hogy Steve képes legyen mozogni a neki megadot világban anélkül, hogy megakadna.Ehhez elösször ismernünk kell az alap mozgási parancsokat.
+            <programlisting language="Python"><![CDATA[
+agent_host.sendCommand("turn 1") // Jobbra fordul, teljes sebességgel. -1 esetén elenkező irányba fog fordulni. agent_host.sendCommand("move 1") // 1-el előre -1-el hátrafelé indul teljes sebeséggel
+
+agent_host.sendCommand("pitch 1") // 1-el lefelé tekintünk -1-el pedig az elenkezö irányba
+
+agent_host.sendCommand("strafe -1") //bal oldalra mozdul, teljes sebességgel
+
+agent_host.sendCommand("jump 1") //ugrálás
+
+agent_host.sendCommand("crouch 1") //guggolás
+
+agent_host.sendCommand("attack 1") //támadás
+
+]]>
+</programlisting>
+        </para>
+        <para>
+            MalmoPython.MissionSpec() függvény a missionXML-ből meghatároza, hogy milyen biomot akarunk létrehozni, milyen játékmodba legyünk állítva illetve meddig fusson egy adott mission.Ezt majd átadja a my_mission változonak.
+        </para>
+<para><command>Példa a missionXML-re</command></para>
+        <programlisting language="XML"><![CDATA[
+'''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+            <Mission xmlns="http://ProjectMalmo.microsoft.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            
+              <About>
+                <Summary>gitlab.com/whoisZORZ</Summary>
+              </About>
+              
+              <ServerSection>
+                <ServerHandlers>
+                  <FlatWorldGenerator generatorString="3;7,220*1,5*3,2;3;,biome_1"/>
+                  <DrawingDecorator>
+                        <DrawSphere x="-27" y="70" z="0" radius="30" type="air"/>
+                  </DrawingDecorator>
+                  <ServerQuitFromTimeUp timeLimitMs="360000"/>
+                  <ServerQuitWhenAnyAgentFinishes/>
+                </ServerHandlers>
+              </ServerSection>
+              
+              <AgentSection mode="Survival">
+                <Name>ZORZBot</Name>
+                <AgentStart/>
+                <AgentHandlers>
+                  <ObservationFromFullStats/>
+                  <ContinuousMovementCommands turnSpeedDegs="180"/>
+                </AgentHandlers>
+              </AgentSection>
+            </Mission>''']]>
+</programlisting>
+        <para>
+Mielöt bármit is csinálnánk az agentnek meg kel adnunk, hogy folyamatosan elöre haladjon és declarálnunk kel néhány változót:
+a pozíció koordinátákat, irány változót, a nézetet pedig a stevepitch változó fogja tárolni.A yaw értéke a Minecraft koordinátarendszeréhez igazodik a 180 északot,a 0 délt,a 90  nyugatot és a -90 pedig keletet.
+<programlisting language="Python"><![CDATA[
+# Loop until mission starts:
+print("Waiting for the mission to start ", end=' ')
+world_state = agent_host.getWorldState()
+while not world_state.has_mission_begun:
+    print(".", end="")
+    time.sleep(0.1)
+    world_state = agent_host.getWorldState()
+    for error in world_state.errors:
+        print("Error:",error.text)
+
+print()
+print("Mission running ", end=' ')
+
+    agent_host.sendCommand( "move 1" )
+
+Sx = 0
+Sz = 0
+sy = 0
+Syaw = 0
+Spitch = 0
+eidx = 0
+eidxj = 0
+eidxb = 0
+Barrier = 0]]>
+</programlisting>
+</para>
+<para>
+Steveet mozgás közben blokkok fogják körül venni ezért elöfordulhat,hogy megakad valamilyen akadályba például nekimegy egy fának.Ennek elkerülése érdekében a json függvénnyel információt fogunk gyüjteni a Stevet körülvevő blokkokról.Ezeket az információkat terminálra is kiírathatjuk.
+        
+<programlisting language="Python"><![CDATA[
+if world state.number of observations since last state > 0:
+    msg = world_state.observations[-1].text
+    observations = json.loads(msg)
+    nbr = observations.get("nbr3x3", 0)
+    print("Mit latok: ", nbr)
+    
+    if "Yaw" in observations:
+        Syaw = observations["Yaw"]
+    if "Pitch" in observations:
+        Spitch = observations["Pitch"]
+    if "XPos" in observations:
+        Sx = observations["XPos"]
+    if "ZPos" in observations:
+        Sz = observations["ZPos"]
+    if "YPos" in observations:
+        Sy = observations["YPos"]
+        
+    print ("Pozicio koordinatak: ", Sx, Sz, Sy)
+    print ("Irany: ", Syaw)
+    print ("Nezet: ", Spitch)
+    
+    if Syaw >= 180-22.5 and Syaw <= 180+22.5 :
+        eidx = 1
+        eidxj = 2
+        eidxb = 0
+        
+    if Syaw >= 180+22.5 and Syaw <= 270-22.5 :
+        eidx = 2
+        eidxj = 5 
+        eidxb = 1
+        
+    if Syaw >= 270-22.5 and Syaw <= 270+22.5 :
+        eidx = 5
+        eidxj = 8
+        eidxb = 2
+        
+    if Syaw >= 270+22.5 and Syaw <= 360-22.5 :
+        eidx = 8
+        eidxj = 7
+        eidxb = 5
+        
+    if Syaw >= 360-22.5 or Syaw  <= 0+22.5 :
+        eidx = 7
+        eidxj = 6 
+        eidxb = 8
+        
+    if Syaw >= 0+22.5 and Syaw <= 90-22.5 :
+        eidx = 6
+        eidxj = 3
+        eidxb = 7
+        
+    if Syaw >= 90-22.5 and Syaw <= 90+22.5 :
+        eidx = 3
+        eidxj = 0
+        eidxb = 6
+        
+    if Syaw >= 90+22.5 and Syaw <= 180-22.5 :
+        eidx = 0
+        eidxj = 1
+        eidxb = 3
+        ]]>
+</programlisting>
+</para>
+<para>
+Amikor Stevenek nem lesz szabad utja,akkor arra fogjuk utasítani, hogy kezdjen el fordulni és növeljük a Barrier változót eggyel.Amenyiben szabad az út Stevnek nem kell csinálnia semmit csak előre haladnia.Egyes akadályokat Steve ugrással is kivédhet.
+<programlisting language="Python"><![CDATA[
+if nbr[eidx+9]!="air" or nbr[eidxj+9]!="air" or nbr[eidxb+9]!="air":
+        print ("Nincs szabad utam, elottem: ", nbr[eidx+9])
+        agent_host.sendCommand ("turn" + str(turn))
+        Barrier = Barrier + 1
+    else:
+        print ("Szabad az ut!")
+        agent_host.sendCommand ("turn 0")
+        agent_host.sendCommand ("jump 0")
+        agent_host.sendCommand ("attack 0")
+        Barrier = 0
+        
+    if Barrier > 8:
+        agent_host.sendCommand ("jump 1")
+    
+    lepes = lepes + 1
+    if lepes > 100:
+    lepes = 0
+    if tav < 20:
+        prevSx = Sx
+        prevSz = Sz
+        prevSy = Sy
+        turn = turn * -1
+        agent_host.sendCommand ("attack 1")
+    
+    time.sleep(1)
+
+print()
+print("Mission ended")
+# Mission has ended.]]>
+</programlisting>
+</para>
+    </section>        
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+</chapter>                

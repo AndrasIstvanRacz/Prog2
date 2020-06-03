@@ -1,0 +1,563 @@
+<chapter xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0" xml:lang="hu">
+    <info>
+        <title>Helló, Liskov!</title>
+        <keywordset>
+            <keyword/>
+        </keywordset>
+    </info>
+    
+    <section>
+        <title>Liskov helyettesítés sértése</title>
+        <para>
+            A feladat megoldásához először a Liskov helyettesítési elvről (LSP-ről) kell ejtenünk pár szót. Az LSP szerint az alaposztályokra történő hivatkozásokat használó funkcióknak képesnek kell lenniük arra, hogy a származtatott osztály objektumait felhasználják anélkül, hogy tudnák. Másszóval a származtatott osztályoknak helyettesítenie kell az alaposztályt.
+        </para>
+        <para>
+            A Liskov helyetesítési elvet a négyzet és a téglalap példájával lehet talán a legjobban szemléltetni, és a jobb átlathatóság itt láthatjuk a példát javában megvalósítva:
+        
+            <programlisting language="java">
+            <![CDATA[
+class Rectangle {
+    private int length;
+    private int breadth;
+    public int getLength() {
+        return length;
+    }
+    public void setLength(int length) {
+        this.length = length;
+    }
+    public int getBreadth() {
+        return breadth;
+    }
+    public void setBreadth(int breadth) {
+        this.breadth = breadth;
+    }
+    public int getArea() {
+        return this.length * this.breadth;
+    }
+};
+
+
+class Square extends Rectangle {
+    
+    public void setBreadth(int breadth) {
+        super.setBreadth(breadth);
+        super.setLength(breadth);
+    }
+    
+    public void setLength(int length) {
+        super.setLength(length);
+        super.setBreadth(length);
+    }
+};
+
+class LSP {
+
+    public void calculateArea(Rectangle r) {
+        r.setBreadth(2);
+        r.setLength(3);
+        
+        assert r.getArea() == 6 : printError("area", r);
+        
+        assert r.getLength() == 3 : printError("length", r);
+        assert r.getBreadth() == 2 : printError("breadth", r);
+    }
+     
+    private String printError(String errorIdentifer, Rectangle r) {
+        return "Unexpected value of " + errorIdentifer + "  for instance of " + r.getClass().getName();
+    }
+     
+    public static void main(String[] args) {
+        LSP lsp = new LSP();
+        lsp.calculateArea(new Rectangle());
+        lsp.calculateArea(new Square());
+    }
+};
+            ]]>
+            </programlisting>
+        Az elv szerint az alaposztályokra történő hivatkozásokat használó funkcióknak képesnek kell lenniük arra, hogy a származtatott osztály objektumait felhasználják anélkül, hogy tudnák. Tehát a példában látható CalcArea függvénynek képesnek kell lennie arra, hogy a származtatott osztály objektumait, például a Négyzetet, felhasználja, és teljesítse a Téglalap által meghatározott követelményt. A probléma akkor merül fel amikor ugyanezt a Négyzetre akarjuk megcsinálni mivel a square osztálynak nincs szüksége olyan módszerre, minta a setBreadth vagy a setLength,mivel a négyzet oldalai egyenlőek.
+        </para>
+        <para>
+        LSP sértése C++ nyelvben ezuttal a madaras példán keresztül.
+                    <programlisting language="java">
+            <![CDATA[
+class Madar {
+public:
+     virtual void repul() {};
+};
+
+
+class Program {
+public:
+     void fgv ( Madar &madar ) {
+          madar.repul();
+     }
+};
+
+// itt jönnek az LSP-s S osztályok
+class Sas : public Madar
+{};
+
+class Pingvin : public Madar 
+{};
+
+int main ( int argc, char **argv )
+{
+     Program program;
+     Madar madar;
+     program.fgv ( madar );
+
+     Sas sas;
+     program.fgv ( sas );
+
+     Pingvin pingvin;
+     program.fgv ( pingvin ); 
+
+}
+            ]]>
+            </programlisting>
+        </para>
+
+    </section>
+    <section>
+        <title>Szülő-gyerek</title>
+        <para>
+            Írjunk Szülő-gyerek Java és C++ osztálydefiníciót, amelyben demonstrálni tudjuk, hogy az ősön
+            keresztül csak az ős üzenetei küldhetőek!
+        </para>
+        <para>
+            Ebben a feladatban mindössze azt kellet szemléltesük hogy a szülő referencián keresztül nem lehetséges meghívni a gyermeke egy olyan metódusát amit ő maga nem határozot meg.
+        </para>
+        <para><command>Javás példa</command></para>
+<programlisting language="java">
+            <![CDATA[
+class szulo
+{
+    public void szulo_vagyok()
+    {
+        System.out.println("Én vagyok én.");
+    }
+};
+
+
+class gyerek extends szulo
+{
+    public void gyerek_vagyok(String x)
+    {
+        System.out.println(x);
+    }
+
+    public static void main(String[] args)
+    {
+        szulo sz = new szulo();
+        szulo sz2 = new gyerek();
+        System.out.println("A szülő meghívó módszere");
+        sz.szulo_vagyok();
+        System.out.println("A gyermek meghívása a szülőn referencián  keresztül ");
+        sz2.gyerek_vagyok("Nem működik");
+        
+    }
+};
+            ]]>
+</programlisting>
+            <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Liskov/SzuloGyerek/JavaPelda.png" scale="70" />
+                </imageobject>
+            </mediaobject>
+<para><command>C++ példa</command></para>
+<programlisting language="C++">
+            <![CDATA[
+class szulo
+{
+    public void szulo_vagyok()
+    {
+        System.out.println("Én vagyok én.");
+    }
+};
+
+
+class gyerek extends szulo
+{
+    public void gyerek_vagyok(String x)
+    {
+        System.out.println(x);
+    }
+
+    public static void main(String[] args)
+    {
+        szulo sz = new szulo();
+        szulo sz2 = new gyerek();
+        System.out.println("A szülő meghívó módszere");
+        sz.szulo_vagyok();
+        System.out.println("A gyermek meghívása a szülőn referencián  keresztül ");
+        sz2.gyerek_vagyok("Nem működik");
+        
+    }
+};
+            ]]>
+</programlisting>
+            <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Liskov/SzuloGyerek/C++Pelda.png" scale="70" />
+                </imageobject>
+            </mediaobject>
+    </section>
+
+
+    <section>
+        <title>Anti OO</title>
+        <para>
+            Ebben a feladatban az Arroway fejezetben már megismert BBP algoritmust fogjuk használni. Annyi külömbség lesz hogy míg az Arroway fejezetben csak a javas verziot használtuk itt most megalkotjuk a C, C++ és a C# verzuoját és összehasonlítotuk a futási idejüket.
+             
+        </para>
+         <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Liskov/AntiOO/Tablazat.png" scale="100" />
+                </imageobject>
+            </mediaobject>
+        <para>
+            Mint ahogyan a táblázatban látható a java lett a leggyorsabb. Ez azért törtnént mert a javában már alapból egy csomó minden meg van írva amik jobbak amit mi C/C++-ba megírnánk, illetve futás közben is egy csomó optimalizálás történik ez abbol is látható hogy 10^8-nál a java már jeletösen gyorsabb volt.
+        </para>
+
+<para><command>Forráskódok</command></para>
+<programlisting language="java">
+<![CDATA[
+
+//Java kód
+
+
+public class PiBBPBench {
+    
+    public static double d16Sj(int d, int j) {
+        
+        double d16Sj = 0.0d;
+        
+        for(int k=0; k<=d; ++k)
+            d16Sj += (double)n16modk(d-k, 8*k + j) / (double)(8*k + j);
+        
+        
+        
+        return d16Sj - Math.floor(d16Sj);
+    }
+    
+    public static long n16modk(int n, int k) {
+        
+        int t = 1;
+        while(t <= n)
+            t *= 2;
+        
+        long r = 1;
+        
+        while(true) {
+            
+            if(n >= t) {
+                r = (16*r) % k;
+                n = n - t;
+            }
+            
+            t = t/2;
+            
+            if(t < 1)
+                break;
+            
+            r = (r*r) % k;
+            
+        }
+        
+        return r;
+    }
+    
+    public static void main(String args[]) {
+        
+        double d16Pi = 0.0d;
+        
+        double d16S1t = 0.0d;
+        double d16S4t = 0.0d;
+        double d16S5t = 0.0d;
+        double d16S6t = 0.0d;
+        
+        int jegy = 0;
+        
+        long delta = System.currentTimeMillis();
+        
+        for(int d=1000000; d<1000001; ++d) {
+            
+            d16Pi = 0.0d;
+            
+            d16S1t = d16Sj(d, 1);
+            d16S4t = d16Sj(d, 4);
+            d16S5t = d16Sj(d, 5);
+            d16S6t = d16Sj(d, 6);
+            
+            d16Pi = 4.0d*d16S1t - 2.0d*d16S4t - d16S5t - d16S6t;
+            
+            d16Pi = d16Pi - Math.floor(d16Pi);
+            
+            jegy = (int)Math.floor(16.0d*d16Pi);
+            
+        }
+        
+        System.out.println(jegy);
+        delta = System.currentTimeMillis() - delta;
+        System.out.println(delta/1000.0);
+    }
+} 
+]]>
+</programlisting>
+
+<programlisting language= "C">
+<![CDATA[
+
+// C# kód
+
+
+public class PiBBPBench {
+    
+    public static double d16Sj(int d, int j) {
+        
+        double d16Sj = 0.0d;
+        
+        for(int k=0; k<=d; ++k)
+            d16Sj += (double)n16modk(d-k, 8*k + j) / (double)(8*k + j);
+        
+       
+        
+        return d16Sj - System.Math.Floor(d16Sj);
+    }
+    
+    public static long n16modk(int n, int k) {
+        
+        int t = 1;
+        while(t <= n)
+            t *= 2;
+        
+        long r = 1;
+        
+        while(true) {
+            
+            if(n >= t) {
+                r = (16*r) % k;
+                n = n - t;
+            }
+            
+            t = t/2;
+            
+            if(t < 1)
+                break;
+            
+            r = (r*r) % k;
+            
+        }
+        
+        return r;
+    }
+    
+     public static void Main(System.String[]args) { 
+        
+        double d16Pi = 0.0d;
+        
+        double d16S1t = 0.0d;
+        double d16S4t = 0.0d;
+        double d16S5t = 0.0d;
+        double d16S6t = 0.0d;
+        
+        int jegy = 0;
+        
+        System.DateTime kezd = System.DateTime.Now;
+        
+        for(int d=100000000; d<100000001; ++d) {
+            
+            d16Pi = 0.0d;
+            
+            d16S1t = d16Sj(d, 1);
+            d16S4t = d16Sj(d, 4);
+            d16S5t = d16Sj(d, 5);
+            d16S6t = d16Sj(d, 6);
+            
+            d16Pi = 4.0d*d16S1t - 2.0d*d16S4t - d16S5t - d16S6t;
+            
+            d16Pi = d16Pi - System.Math.Floor(d16Pi);
+            
+            jegy = (int)System.Math.Floor(16.0d*d16Pi);
+            
+        }
+        
+        System.Console.WriteLine(jegy);
+        System.TimeSpan delta = System.DateTime.Now.Subtract(kezd);
+        System.Console.WriteLine(delta.TotalMilliseconds/1000.0);
+    }
+} 
+]]>
+</programlisting>
+
+<programlisting language="C">
+<![CDATA[
+
+// C kód
+
+#include <stdio.h>
+#include <math.h>
+#include <time.h>
+
+long
+n16modk (int n, int k)
+{
+  long r = 1;
+
+  int t = 1;
+  while (t <= n)
+    t *= 2;
+
+  for (;;)
+    {
+
+      if (n >= t)
+	{
+	  r = (16 * r) % k;
+	  n = n - t;
+	}
+
+      t = t / 2;
+
+      if (t < 1)
+	break;
+
+      r = (r * r) % k;
+
+    }
+
+  return r;
+}
+
+
+double
+d16Sj (int d, int j)
+{
+
+  double d16Sj = 0.0;
+  int k;
+
+  for (k = 0; k <= d; ++k)
+    d16Sj += (double) n16modk (d - k, 8 * k + j) / (double) (8 * k + j);
+
+  return d16Sj - floor (d16Sj);
+}
+
+
+main ()
+{
+
+  double d16Pi = 0.0;
+
+  double d16S1t = 0.0;
+  double d16S4t = 0.0;
+  double d16S5t = 0.0;
+  double d16S6t = 0.0;
+
+  int jegy;
+  int d;
+
+  clock_t delta = clock ();
+
+  for (d = 1000000; d < 1000001; ++d)
+    {
+
+      d16Pi = 0.0;
+
+      d16S1t = d16Sj (d, 1);
+      d16S4t = d16Sj (d, 4);
+      d16S5t = d16Sj (d, 5);
+      d16S6t = d16Sj (d, 6);
+
+      d16Pi = 4.0 * d16S1t - 2.0 * d16S4t - d16S5t - d16S6t;
+
+      d16Pi = d16Pi - floor (d16Pi);
+
+      jegy = (int) floor (16.0 * d16Pi);
+
+    }
+
+  printf ("%d\n", jegy);
+  delta = clock () - delta;
+  printf ("%f\n", (double) delta / CLOCKS_PER_SEC);
+} 
+
+]]>
+</programlisting>   
+    </section>
+
+    <section>
+        <title>Hello, Android!</title>
+        <para>
+            Feladatunk az volt, hogy éleszük fel az SMNIST alkalamazást és tegyünk benne aprób változtatásokat.
+            Először is ehhez fel kellet telepitenünk az android studio alkalamazást amit a feladat megoldásához fogunk használni. Amiután ezzel végeztünk létrehozunk egy új projectet.A https://gitlab.com/nbatfai/smnist/tree/master/forHumans/SMNISTforHumansExp3/app/src/main repóból letöltjük az SMNIST fáljait majd ebből a ScaleAdapter, SMNISTE3Activity, SMNISTSurfaceView és a SurfaceEvents átmásoljuk a mi projectünk megfelelő mappába.
+            <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Liskov/Hello_Android/ProjectCreation1.png" scale="40" />
+                </imageobject>
+            </mediaobject>
+            Ezután az activity_smniste3.xml-t bemásoljuk a layout mappába.
+            <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Liskov/Hello_Android/ProjectCreation2.png" scale="40" />
+                </imageobject>
+            </mediaobject>
+            Ahhoz, hogy ez működjön az AndroidManifest.xml-be be kell írnunk néhány sort.
+            <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Liskov/Hello_Android/ProjectCreation3.png" scale="40" />
+                </imageobject>
+            </mediaobject>
+            Ha ezzekel végeztünk akkor már csak annyi van hátra, hogy átírjunk pár dolgot a kódban. Erre az Android JDK gyors változása miat van szükség. Nem csak újítások kerülnek be te változik a szintaxisa és a strukturája is. 
+        </para> 
+        <para>
+            Most, hogy a fáljaink a helyükön vannak és minden müködik áttérhetünk a változtatásokra. Az első amit meg fogunk tenni az, hogy megváltoztatjuk a háttér színét. Ezt úgy tehetjük meg, hogy az SMNISTSurficeView fáljban átírjuk a bgColor-ban az rgb kódokat úgy, hogy a nekünk tetsző szineket kapjuk.
+            <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Liskov/Hello_Android/ProjectModification1.png" scale="40" />
+                </imageobject>
+            </mediaobject>
+            Következönek a private void cinit-ben található textPaint-et, msgPaint, dotPaint, borderPaint és a fillPaint fogjuk módosítani szintént saját tetszésünknek megfelelően.
+            <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Liskov/Hello_Android/ProjectModification2.png" scale="40" />
+                </imageobject>
+            </mediaobject>
+            
+            <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Liskov/Hello_Android/Project.png" scale="50" />
+                </imageobject>
+            </mediaobject>
+            Az én változtatásaimmal például ez az eredmény születet
+        </para>
+    </section>
+
+    <section>
+        <title>Ciklomatikus komplexitás</title>
+        <para> 
+            Számoljuk ki valamelyik programunk függvényeinek ciklomatikus komplexitását!
+        </para>
+        <para>
+            A ciklomatikus komplexitás egy szoftvermetrikai ami egy szoftver komplexitását határozza meg. A komplexitás kisszámítása a gráfelméleten alapul, a kódban lévő elágazásokból felépülő gráf pontjai, és a köztük található élekből számitható ki a következöképpen:
+            <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Liskov/CiklomatikusK/szamit.png" scale="70" />
+                </imageobject>
+            </mediaobject> 
+            Ahol E a gráf éleinek, N a gráfban lévő csúcsok és P pedig az összefüggő komponensek száma. A képlet alapján kapott M érték pedig a ciklomatikus komplexitás lesz aminek nem lenne szabad meghaladnia a 10-et, mivel e felet a kód nehezen értelmezhetővé, javithatóvá válik.
+        </para>
+        <para>
+            Mi a LZWBinfa.cpp kódnak néztük meg a ciklomatikus komplexitását és ez az eredmény született:
+            <mediaobject>
+                <imageobject>
+                    <imagedata fileref="source/MasodikFejezet/Liskov/CiklomatikusK/meres.png" scale="100" />
+                </imageobject>
+            </mediaobject> 
+            Mint láthatjuk a legmagasabb értékünk is mindössze csak 6 volt, átlagában pedig a program ciklomatikus komplexitása valahol 1-2 között mozog, ami azt jelenti, hogy az LZWBinfa.cpp elég jól átlátható.
+        </para>
+    </section>           
+</chapter>
+
+
+
